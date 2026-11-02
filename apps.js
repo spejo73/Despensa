@@ -182,6 +182,15 @@ const ALIMENTOS = [
 ];
 
 
+// PARCHE DE CONGELACIÓN: Avisa de lo que no se puede congelar
+const NO_CONGELAR = ["leche", "yogur", "nata", "queso fresco", "queso tierno", "queso de burgos", "mayonesa", "huevo", "patata", "lechuga", "endivia", "escarola", "kale", "espinaca", "acelga", "tomate", "pepino", "sandia", "sandía", "melon", "melón", "uvas", "naranja", "mandarina", "limon", "limón", "manzana", "pera", "jamón", "jamon", "salchichón", "salchichon", "chorizo", "bacon", "panceta", "cebolla", "puerro", "apio", "rabano", "rábano", "tofu", "hamburguesa vegetal", "sushi"];
+ALIMENTOS.forEach(alim => {
+  let n = alim.n.toLowerCase();
+  if (NO_CONGELAR.some(palabra => n.includes(palabra))) {
+    alim.c = false;
+  }
+});
+
 let existencias = []; let siguienteId = 1; let seleccionActual = null;
 
 function cargar(){ try { const raw = localStorage.getItem('despensa_v1'); if (raw) { const d = JSON.parse(raw); existencias = d.existencias || []; siguienteId = d.siguienteId || 1; } } catch(e) { existencias = []; siguienteId = 1; } }
