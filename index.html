@@ -10,19 +10,24 @@
   body { margin:0; font-family:'Segoe UI', Tahoma, sans-serif; background:#f4f1ea; color:#333; padding-bottom:80px; }
   header { background:#3e5c42; color:#fff; padding:16px; position:sticky; top:0; z-index:10; }
   header h1 { margin:0; font-size:22px; }
-  .tabs { display:flex; background:#3e5c42; position:sticky; top:80px; z-index:9; overflow-x:auto; }
+  header small { opacity:0.8; font-size:13px; display:block; margin-top:4px; }
+  .tabs { display:flex; background:#3e5c42; position:sticky; top:90px; z-index:9; overflow-x:auto; }
   .tab { flex:1; padding:12px 4px; text-align:center; color:#c8d6ca; font-size:12px; font-weight:bold; cursor:pointer; border-bottom:4px solid transparent; min-width:70px; }
   .tab.activa { color:#fff; border-bottom-color:#f2c94c; }
   .panel { padding:16px; display:none; }
   .panel.activa { display:block; }
-  .item { display:flex; justify-content:space-between; align-items:center; padding:12px; background:#fff; margin-bottom:8px; border-radius:12px; }
-  .btn-abrir { background:#4caf50; color:#fff; border:none; padding:8px; border-radius:5px; font-weight:bold; }
-  .btn-gastar { background:#ff9800; color:#fff; border:none; padding:8px; border-radius:5px; font-weight:bold; }
-  .btn-mover { background:#03a9f4; color:#fff; border:none; padding:8px; border-radius:5px; font-weight:bold; }
-  .fab { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#f2c94c; color:#3e5c42; font-size:32px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.3); cursor:pointer; z-index:20; }
+  .item { display:flex; justify-content:space-between; align-items:center; padding:12px; background:#fff; margin-bottom:8px; border-radius:12px; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
+  .item .nombre { font-weight:bold; color:#2c3e2e; }
+  .item .detalle { font-size:12px; color:#666; }
+  .acciones { display:flex; gap:6px; }
+  button { border:none; border-radius:8px; padding:10px 14px; font-weight:bold; cursor:pointer; }
+  .btn-abrir { background:#4caf50; color:#fff; }
+  .btn-gastar { background:#ff9800; color:#fff; }
+  .btn-mover { background:#03a9f4; color:#fff; }
+  .fab { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#f2c94c; color:#3e5c42; font-size:32px; box-shadow:0 4px 10px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; }
   .modal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:flex-end; z-index:30; }
   .modal.abierto { display:flex; }
-  .modal-caja { background:#fff; width:100%; padding:20px; border-radius:20px 20px 0 0; max-height:90vh; overflow-y:auto; }
+  .modal-caja { background:#fff; width:100%; border-radius:20px 20px 0 0; padding:20px; max-height:90vh; overflow-y:auto; }
   .campo { margin-bottom:12px; }
   .campo label { font-size:14px; font-weight:bold; color:#555; }
   .campo input, .campo select { width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:8px; margin-top:4px; }
@@ -44,18 +49,19 @@
 <body>
 <header>
   <h1>👨‍🍳 Mi Despensa</h1>
+  <small id="fecha-hoy"></small>
   <div style="margin-top:8px; display:flex; gap:6px;">
-    <button id="btn-backup" style="flex:1; background:#f2c94c; color:#3e5c42; font-size:12px; padding:6px; border-radius:8px; font-weight:bold;">💾 Copia</button>
-    <button id="btn-restore" style="flex:1; background:#8fa894; color:#fff; font-size:12px; padding:6px; border-radius:8px; font-weight:bold;">📥 Restaurar</button>
+    <button id="btn-backup" style="flex:1; background:#f2c94c; color:#3e5c42; font-size:12px; padding:6px; border-radius:8px;">💾 Copia</button>
+    <button id="btn-restore" style="flex:1; background:#8fa894; color:#fff; font-size:12px; padding:6px; border-radius:8px;">📥 Restaurar</button>
   </div>
 </header>
 <div id="avisos-globales" style="padding: 12px 12px 0 12px;"></div>
 <div class="tabs">
-  <div class="tab activa" data-tab="nevera">🧊 Nevera</div>
-  <div class="tab" data-tab="congelador">❄️ Congelador</div>
-  <div class="tab" data-tab="despensa">🥫 Despensa</div>
-  <div class="tab" data-tab="recetas">🍳 Recetas</div>
-  <div class="tab" data-tab="trucos">💡 Trucos</div>
+  <div class="tab activa" data-tab="nevera"><span class="icono">🧊</span>Nevera</div>
+  <div class="tab" data-tab="congelador"><span class="icono">❄️</span>Congelador</div>
+  <div class="tab" data-tab="despensa"><span class="icono">🥫</span>Despensa</div>
+  <div class="tab" data-tab="recetas"><span class="icono">🍳</span>Recetas</div>
+  <div class="tab" data-tab="trucos"><span class="icono">💡</span>Trucos</div>
 </div>
 <div class="panel activa" id="panel-nevera"></div>
 <div class="panel" id="panel-congelador"></div>
@@ -69,7 +75,7 @@
     <div class="campo" style="position:relative;">
       <label>Producto</label>
       <div class="fila">
-        <input id="in-nombre" placeholder="Escribe..." autocomplete="off">
+        <input id="in-nombre" placeholder="Escribe, micro o cámara..." autocomplete="off">
         <button class="btn-icono" id="btn-micro-nombre">🎤</button>
         <button class="btn-icono" id="btn-camara-nombre">📷</button>
       </div>
@@ -96,12 +102,6 @@
     </div>
   </div>
 </div>
-<script>
-window.onerror = function(msg, url, line, col, error) {
-   alert("¡ERROR ENCONTRADO!\nMensaje: " + msg + "\nArchivo: " + url + "\nLínea: " + line);
-   return false;
-};
-</script>
 <script src="trucos.js"></script>
 <script src="recetas.js"></script>
 <script src="apps.js"></script>
