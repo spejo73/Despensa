@@ -227,8 +227,12 @@ function renderAvisos(){
   proximos.forEach(x => {
     const clase = x.dias < 0 ? 'rojo' : 'ambar';
     const txt = x.dias < 0 ? 'Caducado' : (x.dias === 0 ? 'Caduca hoy' : 'Caduca en ' + x.dias + ' días');
-    const alim = ALIMENTOS.find(a => a.n.toLowerCase() === x.e.nombre.toLowerCase());
-    const esCongelable = alim ? (alim.c !== false) : true; 
+
+    const nombreItem = x.e.nombre.toLowerCase();
+    const NO_CONGELAR = ["leche", "yogur", "nata", "queso", "mayonesa", "huevo", "patata", "lechuga", "endivia", "escarola", "kale", "espinaca", "acelga", "tomate", "pepino", "sandia", "melon", "uvas", "naranja", "mandarina", "limon", "manzana", "pera", "jamon", "salchichon", "chorizo", "bacon", "panceta", "cebolla", "puerro", "apio", "rabano", "tofu", "sushi", "champiñon", "champinon"];
+    let esCongelable = true;
+    if (NO_CONGELAR.some(palabra => nombreItem.includes(palabra))) { esCongelable = false; }
+
     let sug = (x.dias >= 0 && x.e.ubicacion !== 'congelador') ? (esCongelable ? ' (Puedes congelarlo ❄️)' : ' (¡Gástalo pronto! No congela bien)') : '';
     html += '<div class="aviso ' + clase + '"><b>' + (x.dias < 0 ? '❌ ' : '⚠️ ') + txt + ':</b> ' + x.e.nombre + sug + '</div>';
   });
