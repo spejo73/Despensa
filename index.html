@@ -3,21 +3,791 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Prueba</title>
+<title>Mi despensa</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
-  body { margin:0; font-family:sans-serif; background:#f4f1ea; color:#333; padding:20px; text-align:center; }
-  h1 { color:#3e5c42; }
-  button { padding:15px; font-size:18px; background:#4caf50; color:#fff; border:none; border-radius:8px; margin-top:20px; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Segoe UI', Tahoma, sans-serif; background:#f4f1ea; color:#333; padding-bottom:80px; }
+  header { background:#3e5c42; color:#fff; padding:16px; position:sticky; top:0; z-index:10; }
+  header h1 { margin:0; font-size:22px; }
+  .tabs { display:flex; background:#3e5c42; position:sticky; top:80px; z-index:9; overflow-x:auto; }
+  .tab { flex:1; padding:12px 4px; text-align:center; color:#c8d6ca; font-size:12px; font-weight:bold; cursor:pointer; border-bottom:4px solid transparent; min-width:70px; }
+  .tab.activa { color:#fff; border-bottom-color:#f2c94c; }
+  .panel { padding:16px; display:none; }
+  .panel.activa { display:block; }
+  .item { display:flex; justify-content:space-between; align-items:center; padding:12px; background:#fff; margin-bottom:8px; border-radius:12px; box-shadow:0 2px 4px rgba(0,0,0,0.05); }
+  .item .nombre { font-weight:bold; color:#2c3e2e; }
+  .item .detalle { font-size:12px; color:#666; }
+  .acciones { display:flex; gap:6px; }
+  button { border:none; border-radius:8px; padding:10px 14px; font-weight:bold; cursor:pointer; }
+  .btn-abrir { background:#4caf50; color:#fff; }
+  .btn-gastar { background:#ff9800; color:#fff; }
+  .btn-mover { background:#03a9f4; color:#fff; }
+  .fab { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#f2c94c; color:#3e5c42; font-size:32px; box-shadow:0 4px 10px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; }
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:flex-end; z-index:30; }
+  .modal.abierto { display:flex; }
+  .modal-caja { background:#fff; width:100%; border-radius:20px 20px 0 0; padding:20px; max-height:90vh; overflow-y:auto; }
+  .campo { margin-bottom:12px; }
+  .campo label { font-size:14px; font-weight:bold; color:#555; }
+  .campo input, .campo select { width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:8px; margin-top:4px; }
+  .fila { display:flex; gap:6px; margin-top:4px; }
+  .fila input { flex:1; }
+  .btn-icono { background:#eee; font-size:18px; border:1px solid #ccc; border-radius:8px; padding:8px; }
+  .aviso { padding:10px; border-radius:8px; margin-bottom:8px; font-size:14px; }
+  .aviso.rojo { background:#ffebee; border-left:4px solid #d32f2f; }
+  .aviso.ambar { background:#fff8e1; border-left:4px solid #f57c00; }
+  .buscador { width:100%; padding:12px; border-radius:8px; border:1px solid #ccc; margin-bottom:12px; font-size:15px; }
+  .receta { background:#fff; border-radius:12px; padding:14px; margin-bottom:12px; border-left:4px solid #3e5c42; }
+  .receta h3 { margin:0 0 6px; font-size:16px; color:#2c3e2e; }
+  .meta { font-size:12px; color:#666; margin-bottom:6px; font-weight:bold; }
+  .ing { font-size:13px; margin:6px 0; }
+  .tiene { color:#2e7d32; } .falta { color:#c67a00; }
+  .pasos { font-size:14px; margin-top:8px; padding-left:18px; }
 </style>
 </head>
 <body>
-<h1>👨‍🍳 Mi Despensa</h1>
-<p>Si puedes ver esto, la base funciona.</p>
-<p id="mensaje">Cargando...</p>
-<button onclick="alert('¡El botón funciona!')">Probar Botón</button>
-
+<header>
+  <h1>👨‍🍳 Mi Despensa</h1>
+  <div style="margin-top:8px; display:flex; gap:6px;">
+    <button id="btn-backup" style="flex:1; background:#f2c94c; color:#3e5c42; font-size:12px; padding:6px; border-radius:8px;">💾 Copia</button>
+    <button id="btn-restore" style="flex:1; background:#8fa894; color:#fff; font-size:12px; padding:6px; border-radius:8px;">📥 Restaurar</button>
+  </div>
+</header>
+<div id="avisos-globales" style="padding: 12px 12px 0 12px;"></div>
+<div class="tabs">
+  <div class="tab activa" data-tab="nevera"><span class="icono">🧊</span>Nevera</div>
+  <div class="tab" data-tab="congelador"><span class="icono">❄️</span>Congelador</div>
+  <div class="tab" data-tab="despensa"><span class="icono">🥫</span>Despensa</div>
+  <div class="tab" data-tab="recetas"><span class="icono">🍳</span>Recetas</div>
+  <div class="tab" data-tab="trucos"><span class="icono">💡</span>Trucos</div>
+</div>
+<div class="panel activa" id="panel-nevera"></div>
+<div class="panel" id="panel-congelador"></div>
+<div class="panel" id="panel-despensa"></div>
+<div class="panel" id="panel-recetas"></div>
+<div class="panel" id="panel-trucos"></div>
+<div class="fab" id="fab-add">+</div>
+<div class="modal" id="modal">
+  <div class="modal-caja">
+    <h3>Añadir producto</h3>
+    <div class="campo" style="position:relative;">
+      <label>Producto</label>
+      <div class="fila">
+        <input id="in-nombre" placeholder="Escribe, micro o cámara..." autocomplete="off">
+        <button class="btn-icono" id="btn-micro-nombre">🎤</button>
+        <button class="btn-icono" id="btn-camara-nombre">📷</button>
+      </div>
+      <input type="file" id="in-foto-nombre" accept="image/*" capture="environment" style="display:none">
+      <div id="sugerencias" style="background:#fff; border:1px solid #ccc; position:absolute; width:100%; z-index:10; display:none; max-height:150px; overflow-y:auto;"></div>
+      <div id="ocr-estado" style="font-size:12px; color:#3e5c42; margin-top:4px; display:none; font-weight:bold;"></div>
+    </div>
+    <div class="campo">
+      <label>Caduca el (opcional)</label>
+      <div class="fila">
+        <input id="in-caduca" type="date" style="flex:1;">
+        <button class="btn-icono" id="btn-micro-fecha">🎤</button>
+        <button class="btn-icono" id="btn-camara-fecha">📷</button>
+      </div>
+      <input type="file" id="in-foto-fecha" accept="image/*" capture="environment" style="display:none">
+    </div>
+    <div class="campo">
+      <label>Ubicación</label>
+      <select id="in-ubi"><option value="nevera">Nevera</option><option value="congelador">Congelador</option><option value="despensa">Despensa</option></select>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button class="btn-abrir" id="btn-cancelar" style="flex:1; background:#ccc; color:#333;">Cancelar</button>
+      <button class="btn-abrir" id="btn-guardar" style="flex:2; background:#3e5c42;">Guardar Producto</button>
+    </div>
+  </div>
+</div>
 <script>
-  document.getElementById('mensaje').textContent = "¡El motor de JavaScript funciona!";
+const ALIMENTOS = [
+  { n:"Leche fresca", u:"nevera", a:4, dias:5, c:false }, { n:"Leche UHT", u:"despensa", a:4, dias:90, c:false },
+  { n:"Leche sin lactosa", u:"nevera", a:4, dias:7, c:false }, { n:"Leche de soja", u:"despensa", a:4, dias:180, c:false },
+  { n:"Bebida de avena", u:"despensa", a:4, dias:180, c:false }, { n:"Yogur natural", u:"nevera", a:3, dias:14, c:false },
+  { n:"Nata líquida", u:"nevera", a:3, dias:7, c:false }, { n:"Queso curado", u:"nevera", a:21, dias:60, c:false },
+  { n:"Queso fresco", u:"nevera", a:4, dias:10, c:false }, { n:"Tofu", u:"nevera", a:3, dias:14, c:false },
+  { n:"Mantequilla", u:"nevera", a:21, dias:30 }, { n:"Pollo", u:"nevera", a:2, dias:3 },
+  { n:"Ternera", u:"nevera", a:2, dias:3 }, { n:"Cerdo", u:"nevera", a:2, dias:3 },
+  { n:"Soja texturizada", u:"despensa", a:0, dias:365 }, { n:"Hummus", u:"nevera", a:3, dias:7, c:false },
+  { n:"Embutido loncheado", u:"nevera", a:4, dias:10, c:false }, { n:"Chorizo", u:"nevera", a:14, dias:30, c:false },
+  { n:"Jamón serrano", u:"nevera", a:21, dias:45, c:false }, { n:"Pescado fresco", u:"nevera", a:1, dias:2 },
+  { n:"Sushi", u:"nevera", a:1, dias:1, c:false }, { n:"Gambas cocidas", u:"nevera", a:2, dias:3 },
+  { n:"Atún en lata", u:"despensa", a:1, dias:365 }, { n:"Huevos frescos", u:"nevera", a:14, dias:21, c:false },
+  { n:"Tomate", u:"nevera", a:5, dias:7, c:false }, { n:"Lechuga", u:"nevera", a:3, dias:5, c:false },
+  { n:"Endivia", u:"nevera", a:3, dias:7, c:false }, { n:"Aguacate", u:"nevera", a:2, dias:5, c:false },
+  { n:"Cebolla", u:"despensa", a:21, dias:30, c:false }, { n:"Ajo", u:"despensa", a:60, dias:90, c:false },
+  { n:"Pimiento", u:"nevera", a:6, dias:10 }, { n:"Zanahoria", u:"nevera", a:14, dias:21 },
+  { n:"Patata", u:"despensa", a:14, dias:30, c:false }, { n:"Champiñones", u:"nevera", a:3, dias:5 },
+  { n:"Calabacín", u:"nevera", a:6, dias:10, c:false }, { n:"Berenjena", u:"nevera", a:6, dias:10, c:false },
+  { n:"Quinoa", u:"despensa", a:0, dias:365 }, { n:"Arroz", u:"despensa", a:0, dias:365 },
+  { n:"Pasta", u:"despensa", a:0, dias:365 }, { n:"Legumbres secas", u:"despensa", a:0, dias:365 },
+  { n:"Harina", u:"despensa", a:0, dias:180 }, { n:"Pan", u:"despensa", a:3, dias:4 },
+  { n:"Aceite de oliva", u:"despensa", a:0, dias:365 }, { n:"Tomate triturado", u:"despensa", a:4, dias:365 },
+  { n:"Mayonesa", u:"nevera", a:45, dias:180, c:false }, { n:"Caldo", u:"nevera", a:4, dias:7 },
+  { n:"Carne congelada", u:"congelador", a:1, dias:180 }, { n:"Pescado congelado", u:"congelador", a:1, dias:180 },
+  { n:"Verdura congelada", u:"congelador", a:1, dias:365 }, { n:"Helado", u:"congelador", a:0, dias:180 }
+];
+
+let TRUCOS = [
+  { c:"🥚 Huevos", t:"Pelar huevos duros sin que se rompan", d:"Pásalos inmediatamente del agua hirviendo a un bol con agua muy fría y hielo. La cáscara se desprenderá sin llevarse la clara." },
+  { c:"🥚 Huevos", t:"Saber si un huevo está fresco", d:"Mételo en un vaso con agua. Si se hunde, está fresquísimo. Si flota, está malo. Si se queda en medio, está en su punto." },
+  { c:"🥚 Huevos", t:"Hacer huevos poché perfectos", d:"Cuela la clara para quitarle la parte líquida. Échalo en agua hirviendo con un chorrito de vinagre y haz un remolino." },
+  { c:"🥚 Huevos", t:"Separar la yema de la clara", d:"Rompe el huevo sobre un embudo. La clara caerá y la yema se quedará arriba. O usa una botella vacía para succionar la yema." },
+  { c:"🥚 Huevos", t:"Hacer tortilla jugosa", d:"No bátas demasiado los huevos. Cuaja a fuego medio-bajo y retira cuando aún esté un poquito líquida; el calor del plato terminará de cuajarla." },
+  { c:"🥚 Huevos", t:"Huevos revueltos cremosos", d:"Cuájalos a fuego MUY bajo y retíralos cuando aún estén brillantes. Añade una cucharada de nata o mantequilla al final." },
+  { c:"🥚 Huevos", t:"Huevos cocidos perfectos", d:"Ponlos en agua fría, cuenta desde que empiece a hervir: 8 min para yema blandita, 10 min para yema dura. Luego pásalos a agua fría." },
+  { c:"🥚 Huevos", t:"Saber si un huevo está cocido", d:"Gíralo sobre la mesa. Si da vueltas rápido y firme, está cocido. Si se tambalea, está crudo." },
+  { c:"🥚 Huevos", t:"Hacer mayonesa a mano", d:"Usa un huevo a temperatura ambiente. Bate con limón y añade el aceite en hilo fino sin dejar de batir." },
+  { c:"🥚 Huevos", t:"Conservar huevos más tiempo", d:"Guárdalos en su huevera con la punta hacia abajo. No los laves hasta que los vayas a usar." },
+  { c:"🧄 Ajos", t:"Pelar ajos fácilmente", d:"Pon el ajo en un bol con agua y mételo al microondas 20 segundos. La piel saldrá sola. También puedes aplastarlo con el cuchillo." },
+  { c:"🧄 Ajos", t:"Quitar el olor a ajo de las manos", d:"Frota tus manos con una cuchara de acero inoxidable bajo el grifo de agua fría. El acero neutraliza el azufre." },
+  { c:"🧄 Ajos", t:"Conservar el ajo pelado", d:"Mételos en un tarro con aceite de oliva. Se conservan en la nevera durante semanas y el aceite coge un sabor buenísimo." },
+  { c:"🧄 Ajos", t:"Hacer ajo en polvo casero", d:"Corta los ajos en láminas finas y ponlos al sol o en el horno a baja temperatura. Luego tritúralos." },
+  { c:"🧄 Ajos", t:"Asar ajos enteros", d:"Corta la punta de la cabeza de ajo, échale aceite y envuélvela en aluminio. Horno a 200°C 30 min. El ajo sale como mantequilla." },
+  { c:"🧄 Ajos", t:"Pelar ajos en 15 segundos", d:"Pon la cabeza de ajos entera en el microondas a máxima potencia durante 15-20 segundos. Las pieles saldrán solas." },
+  { c:"🧅 Cebollas", t:"Cortar cebolla sin llorar", d:"Métela en la nevera 15 minutos antes. El frío hace que los vapores no salgan tan rápido. Cortar cerca del grifo abierto también ayuda." },
+  { c:"🧅 Cebollas", t:"Cebolla caramelizada rápido", d:"Ponla en una sartén con aceite, sal y una pizca de azúcar. A fuego lento, removiendo, en 20 minutos la tienes." },
+  { c:"🧅 Cebollas", t:"Conservar cebollas y patatas", d:"Guárdalas en un lugar fresco y oscuro, pero NUNCA juntas. Las cebollas desprenden un gas que germina las patatas." },
+  { c:"🧅 Cebollas", t:"Cortar cebolla sin llorar (a prueba de balas)", d:"Usa un cuchillo muy afilado. Si el cuchillo está romo, aplasta las células y libera más gas irritante." },
+  { c:"🥬 Verduras", t:"Conservar la lechuga fresca", d:"Lávala, sécala muy bien y envuélvela en papel de cocina. Guárdala en un táper. El papel absorbe la humedad y evita que se pudra." },
+  { c:"🥬 Verduras", t:"Lavar el brócoli a fondo", d:"Dale la vuelta y sumérgelo en agua con vinagre 10 minutos. Así salen todos los bichitos escondidos." },
+  { c:"🥬 Verduras", t:"Aprovechar los tallos del brócoli", d:"No tires los tallos, pélalos y córtalos en rodajas. Saben igual que las flores y son perfectos para salteados." },
+  { c:"🥬 Verduras", t:"Blanquear verduras y conservarlas", d:"Cuécela 2 min en agua hirviendo, pásala a agua con hielo y escúrrela. Congélala en bolsas. Durará meses sin perder color." },
+  { c:"🥬 Verduras", t:"Quitar el amargor de la lechuga", d:"Déjala en un bol con agua muy fría y unas gotas de limón durante 15 minutos." },
+  { c:"🥬 Verduras", t:"Revivir verduras mustias", d:"Si las zanahorias o el apio están blandos, córtales la base y mételos en un vaso con agua fría en la nevera un par de horas." },
+  { c:"🥬 Verduras", t:"Quitar el amargor a las endivias", d:"Corta la base de la endivia en forma de cuña (haciendo un pequeño triángulo). Ahí se acumula la mayor parte del amargor." },
+  { c:"🥬 Verduras", t:"Hacer chips de kale o espinacas", d:"Lava, seca muy bien, mezcla con aceite y sal. Horno a 150°C 10-15 min. Quedarán crujientes." },
+  { c:"🍅 Verduras", t:"Pelar tomates fácilmente", d:"Hazle una cruz en la base, mételos en agua hirviendo 30 seg y pásalos a agua con hielo. La piel se despega sola." },
+  { c:"🍅 Verduras", t:"Quitar el amargor a la berenjena", d:"Córtala en rodajas, échale sal y déjala reposar 30 minutos. Seca bien antes de cocinar." },
+  { c:"🍅 Verduras", t:"Hacer tomate frito casero rápido", d:"Sofríe ajo y cebolla, añade tomate triturado, una pizca de azúcar y orégano. 15 minutos a fuego lento." },
+  { c:"🍅 Verduras", t:"Escurrir bien el tomate triturado", d:"Escurre el líquido antes de echarlo a la sartén. Así la salsa espesará antes y tendrá más sabor." },
+  { c:"🍅 Verduras", t:"Madurar aguacates rápido", d:"Mete los aguacates en una bolsa de papel con un plátano. El gas etileno hará que se maduren en 1 o 2 días." },
+  { c:"🍅 Verduras", t:"Conservar medio aguacate", d:"Déjale el hueso puesto, rocíalo con limón y envuélvelo en film transparente tocando la pulpa." },
+  { c:"🍅 Verduras", t:"Pelar pimientos asados", d:"Mete los pimientos asados en un bol tapado con film 15 minutos. El vapor hará que la piel se despegue sola." },
+  { c:"🍅 Verduras", t:"Hacer tomate frito sin azúcar", d:"Si el tomate está muy ácido, ralla una zanahoria y cuécela con el tomate. La zanahoria aporta dulzor natural." },
+  { c:"🥔 Verduras", t:"Evitar que las patatas se pongan negras", d:"Si no las vas a cocinar enseguida, mételas en un bol con agua fría y unas gotas de limón." },
+  { c:"🥔 Verduras", t:"Pelar patatas nuevas fácilmente", d:"Si la piel es fina, no hace falta pelarlas. Lávalas bien con un estropajo y cocínalas con piel." },
+  { c:"🥔 Verduras", t:"Hacer puré de patatas perfecto", d:"Pásalas por el pasapurés (no batidora, si no se queda gomoso). Añade leche caliente y mantequilla." },
+  { c:"🥔 Verduras", t:"Patatas asadas al microondas rápido", d:"Pincha la patata, ponla en un plato y cocínala a máxima potencia 7-8 minutos. Luego 2 min en la Airfryer." },
+  { c:"🥔 Verduras", t:"Hacer patatas paja", d:"Córtalas en tiras muy finas, lávalas y sécalas bien. Fríelas en aceite muy caliente durante pocos minutos." },
+  { c:"🍄 Verduras", t:"Saltear setas sin que suelten agua", d:"No las laves; límpialas con un paño húmedo. Ponlas al fuego MUY fuerte sin aceite. Cuando suelten el agua, échale el aceite." },
+  { c:"🌿 Verduras", t:"Conservar hierbas frescas", d:"Envuelve el perejil en papel de cocina húmedo y guárdalo en un táper. O ponlas en un vaso con agua como flores." },
+  { c:"🌿 Verduras", t:"Secar hierbas en el microondas", d:"Pon el perejil entre dos hojas de papel de cocina y caliéntalo 1-2 min al microondas. Se seca y dura meses." },
+  { c:"🌿 Verduras", t:"Conservar perejil fresco", d:"Pica el perejil y mételo en una cubitera con agua o aceite. Congélalo para tener porciones listas." },
+  { c:"🌿 Verduras", t:"Picar perejil sin que se pegue", d:"Echa un poquito de sal en la tabla antes de picarlo. La sal evita que se pegue al cuchillo." },
+  { c:"🍚 Arroces", t:"El truco del arroz suelto", d:"Sofríe el arroz crudo 1 minuto antes de echarle el agua. Echa el doble de agua y no lo remuevas mientras se cuece." },
+  { c:"🍚 Arroces", t:"Recalentar arroz sin que se seque", d:"Ponlo en un plato, tápalo con otro plato invertido y mételo al microondas 1 minuto." },
+  { c:"🍚 Arroces", t:"Arroz blanco perfecto en microondas", d:"Usa 1 parte de arroz por 2 de agua hirviendo. Tapa con film y cocina 10 min a máxima potencia. Reposa 5 min." },
+  { c:"🍚 Arroces", t:"Hacer cuscús rápido", d:"Pon el cuscús en un bol con la misma cantidad de agua hirviendo. Tapa y deja reposar 5 minutos. Suelta con un tenedor." },
+  { c:"🍝 Pastas", t:"Cocer pasta perfecta", d:"Échale sal al agua cuando empiece a hervir, remueve el primer minuto y guarda un vaso del agua de cocción para ligar la salsa." },
+  { c:"🍝 Pastas", t:"Evitar que la pasta se pegue", d:"Échale un chorrito de aceite al agua de cocción. Y no la enjuagues con agua fría después (se lleva el almidón)." },
+  { c:"🍝 Pastas", t:"Hacer pasta al dente", d:"Sácala 1 minuto antes de lo que indica el paquete. Terminará de cocinarse en la sartén con la salsa." },
+  { c:"🍝 Pastas", t:"Cocer pasta en el microondas", d:"Pon la pasta en un bol grande con agua y sal. Cocina a máxima potencia 8-10 minutos, removiendo a mitad." },
+  { c:"🍝 Pastas", t:"Recalentar pasta sin microondas", d:"Ponla en una sartén con un poquito de agua o leche y caliéntala a fuego medio. No se secará." },
+  { c:"🥩 Carnes", t:"Carne jugosa a la plancha", d:"Saca la carne de la nevera 20 min antes. Calienta mucho la plancha, sella por ambos lados y no la pinches con el tenedor." },
+  { c:"🥩 Carnes", t:"Ablandar carne dura", d:"Déjala marinando en vino o limón, o golpéala con el mazo de cocina antes de cocinarla." },
+  { c:"🥩 Carnes", t:"Saber si la carne está hecha", d:"Toca la carne. Blanda como la mejilla (poco hecha), firme como la barbilla (al punto), dura como la frente (muy hecha)." },
+  { c:"🥩 Carnes", t:"Limpiar la plancha después de la carne", d:"Echa un vaso de agua en la plancha caliente y tápala. El vapor despegará la grasa quemada." },
+  { c:"🥩 Carnes", t:"Evitar que el pollo se seque", d:"Cocina las pechugas a fuego medio. Tápalas un par de minutos al final para que el vapor mantenga la carne jugosa." },
+  { c:"🥩 Carnes", t:"Desmenuzar pollo cocido rápido", d:"Mientras estén calientes, mételas en la batidora con la pala de amasar. Se deshacen en segundos." },
+  { c:"🥩 Carnes", t:"Quitar la grasa al caldo", d:"Deja enfriar el caldo en la nevera. La grasa se solidificará arriba y podrás quitarla con una cuchara." },
+  { c:"🥩 Carnes", t:"Marinar carne rápido", d:"Mete la carne en una bolsa con el aliño y sumérgela en agua caliente durante 30 minutos." },
+  { c:"🥩 Carnes", t:"Limpiar una tabla de cortar de madera", d:"Frota la tabla con medio limón y sal gruesa. Quita los olores (ajo, cebolla) y desinfecta." },
+  { c:"🥩 Carnes", t:"Hacer un sofrito perfecto", d:"Fuego medio-bajo. Echa primero la cebolla, luego el ajo y por último el pimiento. Remueve a menudo." },
+  { c:"🐟 Pescados", t:"Evitar que el pescado se pegue", d:"Calienta bien la sartén con aceite, echa una pizca de sal gruesa y pon el pescado con la piel hacia abajo. No lo muevas." },
+  { c:"🐟 Pescados", t:"Quitar las espinas fácilmente", d:"Pasa los dedos por el lomo en dirección a la cola. Si encuentras una, tira con pinzas sujetando la carne." },
+  { c:"🐟 Pescados", t:"Comprobar la frescura del pescado", d:"Los ojos deben ser brillantes y saltones. Las agallas rojas y la carne firme." },
+  { c:"🐟 Pescados", t:"Quitar el olor a pescado en la cocina", d:"Pon a hervir un cazo con agua, vinagre y cáscaras de limón después de cocinar." },
+  { c:"🐟 Pescados", t:"Congelar pescado sin que se pegue", d:"Seca los filetes, envuélvelos en film transparente y mételos en una bolsa. Puedes sacar solo lo que necesites." },
+  { c:"🐟 Pescados", t:"Quitar la piel al salmón", d:"Pon el filete con la piel hacia abajo y pasa un cuchillo afilado entre la carne y la piel, moviéndolo de lado a lado." },
+  { c:"🐟 Pescados", t:"Hacer un caldo de pescado rápido", d:"Sofríe cebolla, zanahoria y puerro. Añade espinas de pescado, cubre con agua y cuece 30 min. Cuela y listo." },
+  { c:"🧀 Lácteos", t:"Conservar el queso duro", d:"Envuelve el queso curado en papel de horno (no en film) y guárdalo en la parte menos fría de la nevera." },
+  { c:"🧀 Lácteos", t:"Evitar que la leche se corte", d:"Baja el fuego al mínimo antes de añadir leche a una salsa con limón o vino." },
+  { c:"🧀 Lácteos", t:"Evitar que la mantequilla se queme", d:"Mezcla la mantequilla con un poquito de aceite de oliva en la sartén." },
+  { c:"🧀 Lácteos", t:"Montar nata perfecta", d:"La nata debe estar muy fría. Pon el bol en el congelador 5 minutos antes. Monta siempre en la misma dirección." },
+  { c:"🧀 Lácteos", t:"Evitar que el queso rallado se pegue", d:"Unta el rallador con un poquito de aceite de oliva antes de rallar." },
+  { c:"🧀 Lácteos", t:"Hacer yogur griego casero", d:"Cuela yogur natural en un colador con un trapo limpio sobre un bol, dentro de la nevera, durante 12 horas." },
+  { c:"🧀 Lácteos", t:"Hacer leche condensada casera", d:"Mezcla 1 litro de leche entera con 300g de azúcar. Cuece a fuego lento 1h y media removiendo hasta que reduzca a la mitad." },
+  { c:"🧀 Lácteos", t:"Hacer requesón casero", d:"Calienta un litro de leche con el zumo de un limón. Cuando se corte, cuela con un trapo y deja escurrir." },
+  { c:"🧀 Lácteos", t:"Hacer mantequilla casera", d:"Echa nata muy fría en un bote de cristal con tapa y agítalo 10 minutos. Se separará el suero y quedará la mantequilla." },
+  { c:"🍞 Pan", t:"Revivir pan duro", d:"Mójalo ligeramente con agua y mételo al horno a 180°C 5-10 min. O al microondas 20 segundos con un vaso de agua." },
+  { c:"🍞 Pan", t:"Conservar el pan de molde", d:"Guarda la bolsa en la nevera, no en la despensa. Se enmohece mucho más rápido a temperatura ambiente." },
+  { c:"🍞 Pan", t:"Congelar pan correctamente", d:"Córtalo en rebanadas antes de congelarlo. Así puedes tostar solo lo que vayas a comer." },
+  { c:"🍞 Pan", t:"Hacer picatostes para la sopa", d:"Corta el pan en dados, mezcla con aceite, ajo en polvo y pimentón. Hornea a 180°C 10 min." },
+  { c:"🍞 Pan", t:"Hacer pan rallado casero", d:"Tritura el pan duro tostado. Te durará meses en un táper." },
+  { c:"🍞 Pan", t:"Tostar pan sin tostadora", d:"Usa una sartén antiadherente a fuego medio y tuesta 2 minutos por cada lado." },
+  { c:"🍞 Pan", t:"Mantener crujiente la corteza", d:"Guarda el pan en una bolsa de papel, no de plástico, para que respire y mantenga la textura." },
+  { c:"🍞 Pan", t:"Rebanar pan sin que se rompa", d:"Usa un cuchillo de sierra y movimientos de vaivén sin apretar." },
+  { c:"🍞 Pan", t:"Hacer pan de ajo rápido", d:"Mezcla mantequilla blandita con ajo picado y perejil. Úntalo en pan y hornea 5 min a 200°C." },
+  { c:"🍋 Frutas", t:"Sacar más zumo al limón", d:"Ruedalo con fuerza sobre la encimera antes de cortarlo, o mételo 15 segundos al microondas." },
+  { c:"🍋 Frutas", t:"Conservar limones cortados", d:"Ponlo boca abajo en un plato con un poco de sal, o clávalo con palillos para que no se seque." },
+  { c:"🍋 Frutas", t:"Hacer hielo con zumo o hierbas", d:"Congela el zumo sobrante o hierbas en cubiteras para echarlos a bebidas o guisos." },
+  { c:"🍋 Frutas", t:"Que los limones duren más", d:"Mete los limones en un táper con agua y guárdalos en la nevera. Se mantendrán jugosos semanas." },
+  { c:"🍎 Frutas", t:"Evitar que la fruta se oxide", d:"Rocía manzanas o peras cortadas con unas gotas de limón para que no se pongan marrones." },
+  { c:"🍎 Frutas", t:"Conservar manzanas cortadas", d:"Échales zumo de limón y mételas en la nevera. No se oxidarán." },
+  { c:"🍌 Frutas", t:"Evitar que el plátano madure demasiado", d:"Separa los plátanos y envuelve el tallo de cada uno con papel film. El gas que los madura sale por ahí." },
+  { c:"🍌 Frutas", t:"Madurar plátanos rápido", d:"Mételos al horno a 150°C 15-20 min. La piel se pondrá negra pero la pulpa quedará dulcísima." },
+  { c:"🍌 Frutas", t:"Congelar fruta para batidos", d:"Corta los plátanos o fresas maduras en trozos y congélalos. Perfectos para batidos espesos." },
+  { c:"🍉 Frutas", t:"Cortar una sandía fácilmente", d:"Córtala por la mitad, ponla boca abajo y córtala en tiras. Luego pasa el cuchillo por la base para separar la fruta." },
+  { c:"🍉 Frutas", t:"Saber si una sandía está buena", d:"Tócala con los nudillos. Si suena a hueco, está en su punto. Debe tener una mancha amarilla en la base." },
+  { c:"🍈 Frutas", t:"Saber si un melón está maduro", d:"Huele la parte de abajo. Si huele dulce y fuerte, está maduro." },
+  { c:"🍑 Frutas", t:"Pelar melocotones fácilmente", d:"Hazle una cruz, mételos en agua hirviendo 30 seg y pásalos a agua con hielo. La piel sale sola." },
+  { c:"🍓 Frutas", t:"Lavar fresas sin que sepa a agua", d:"No las dejes a remojo. Lávalas bajo el grifo justo antes de comerlas y sécalas con papel." },
+  { c:"🍓 Frutas", t:"Limpiar fresas con bicarbonato", d:"Échalas en un bol con agua y una cucharada de bicarbonato 5 minutos. Enjuaga bien." },
+  { c:"🍓 Frutas", t:"Hacer mermelada sin azúcar", d:"Usa fruta muy madura y añade una manzana rallada (tiene pectina). Cuece a fuego lento hasta que espese." },
+    { c:"🍊 Frutas", t:"Pelar naranjas fácilmente", d:"Corta los dos polos, haz un corte vertical y despega la piel con los dedos." },
+  { c:"🍊 Frutas", t:"Sacar zumo sin exprimidor", d:"Corta la naranja, clava un tenedor en la pulpa y gíralo apretando contra un vaso." },
+  { c:"🍒 Frutas", t:"Quitar el hueso a las cerezas", d:"Usa una pajita de beber dura. Empuja desde el rabo y el hueso saldrá." },
+  { c:"🥝 Frutas", t:"Pelar kiwis fácilmente", d:"Corta los extremos y mete una cuchara por un lado. Gira la cuchara y saldrá entero." },
+  { c:"🍇 Frutas", t:"Lavar uvas a fondo", d:"Échalas en un bol con agua y un poco de harina. La harina arrastra toda la suciedad." },
+  { c:"🥑 Frutas", t:"Conservar medio aguacate", d:"Déjale el hueso, rocía con limón y envuelve en film tocando la pulpa." },
+  { c:"🥜 Frutos secos", t:"Tostar frutos secos rápido", d:"Ponlos en una sartén a fuego medio sin aceite 3-4 minutos. Despiertan todo su sabor." },
+  { c:"🥜 Frutos secos", t:"Pelar almendras fácilmente", d:"Échalas en agua hirviendo 1 minuto y pásalas a agua fría. La piel sale sola." },
+  { c:"🫚 Raíces", t:"Pelar jengibre fácilmente", d:"Usa el borde de una cuchara de metal para raspar la piel. No pierdes nada de la raíz." },
+  { c:"🫚 Raíces", t:"Conservar el jengibre", d:"Guárdalo en el congelador. Puedes rallarlo directamente congelado cuando lo necesites." },
+  { c:"☕ Bebidas", t:"Hacer café helado sin aguar", d:"Congela café en cubiteras. Al añadirlos a tu café, no perderá sabor." },
+  { c:"🥤 Bebidas", t:"Enfriar una bebida en 2 minutos", d:"Envuelve la lata en papel de cocina mojado y métela al congelador." },
+  { c:"🥤 Bebidas", t:"Quitar el sabor a corcho al vino", d:"Echa una cucharada de leche fría al vino y remueve. La leche atrapa los compuestos del mal sabor." },
+  { c:"☕ Bebidas", t:"Limpiar la cafetera con vinagre", d:"Llena el depósito con mitad agua y mitad vinagre. Ponla a funcionar y luego enjuaga con agua dos veces." },
+  { c:"🍷 Bebidas", t:"Abrir una botella sin sacacorchos", d:"Mete la botella en un zapato y golpea la suela contra la pared. La presión hará salir el corcho." },
+  { c:"🥗 Ensaladas", t:"Lavar la lechuga perfectamente", d:"Corta la base, separa las hojas y sumérgelas en agua con vinagre 10 minutos. Sueltan toda la tierra." },
+  { c:"🥗 Ensaladas", t:"Aderezar la ensalada en el último momento", d:"Si la aliñas antes, la sal hace que las verduras suelten agua y se pongan mustias." },
+  { c:"🥗 Ensaladas", t:"Hacer una vinagreta bien emulsionada", d:"Échalo todo en un bote de cristal con tapa y agítalo fuerte. Dura días en la nevera." },
+  { c:"🥗 Ensaladas", t:"Ensalada César sin anchoas", d:"Machaca ajo con mostaza, mayonesa, parmesano y limón. Queda cremosa sin necesidad de anchoas." },
+  { c:"🥗 Ensaladas", t:"Aliño de ensalada básico", d:"La proporción es 3 partes de aceite por 1 de vinagre. Añade sal y un poquito de miel." },
+  { c:"🍲 Salsas", t:"Espesar una salsa rápida", d:"Disuelve una cucharadita de maicena en agua fría y échala a la salsa hirviendo." },
+  { c:"🍲 Salsas", t:"Recuperar una salsa cortada", d:"Baja el fuego al mínimo y remueve enérgicamente con varillas. Si no, añade una cucharada de nata fría." },
+  { c:"🍲 Salsas", t:"Hacer una salsa brava de verdad", d:"Sofríe cebolla y ajo, añade tomate, guindilla y pimentón de la Vera. Cuece 15 min y tritura." },
+  { c:"🍲 Salsas", t:"Salsa de yogur rápida", d:"Mezcla yogur griego, limón, ajo picado, sal y aceite. Perfecta para carnes o crudités." },
+  { c:"🍲 Salsas", t:"Pesto casero perfecto", d:"Escalda la albahaca 5 segundos y pásala a agua con hielo antes de triturar para que no se ponga negra." },
+  { c:"🍲 Salsas", t:"Recuperar la mayonesa cortada", d:"Pon una yema nueva en un bol y ve echando la mayonesa cortada poco a poco mientras bates." },
+  { c:"🧂 General", t:"Qué hacer si la comida está muy salada", d:"Si es un guiso, échale una patata pelada y entera. Absorberá el exceso de sal." },
+  { c:"🌶️ General", t:"Qué hacer si la comida pica mucho", d:"Añade leche, nata o queso crema. La caseína se lleva la capsaicina. El agua no sirve." },
+  { c:"🍳 General", t:"Medidas sin báscula", d:"1 cucharada sopera de aceite = 10 ml. 1 cucharadita de café = 5 ml. 1 vaso de agua = 250 ml." },
+  { c:"🍳 General", t:"Sustitutos del huevo", d:"Para rebozar usa leche o cerveza. Para repostería, 1 huevo = medio plátano machacado." },
+  { c:"🍳 General", t:"Cortar un bizcocho perfecto", d:"Deja que se enfríe completamente antes de desmoldarlo. Usa un cuchillo de sierra." },
+  { c:"🍳 General", t:"Hacer un baño María", d:"Pon agua en una olla, deja que hierva y coloca un bol encima sin que toque el agua." },
+  { c:"🍳 General", t:"Saber si el aceite está caliente", d:"Echa un trocito de pan. Si burbujea rápido, está listo. Si se hunde, está frío." },
+  { c:"🍳 General", t:"Evitar que salte aceite al freír", d:"Seca muy bien los alimentos antes de echarlos al aceite. El agua es la que hace saltar el aceite." },
+  { c:"🍳 General", t:"Quitar el sabor a quemado", d:"Pásalo a otra olla sin tocar el fondo y añade una patata cruda o un poco de leche." },
+  { c:"🍳 General", t:"Calentar tortillas sin que se rompan", d:"Pon un par de gotas de agua en la sartén y tápala 10 segundos." },
+  { c:"🍳 General", t:"Limpiar la batidora fácil", d:"Echa agua templada, lavavajillas y vinagre. Programa 10 segundos a velocidad 5." },
+  { c:"🍳 General", t:"Evitar que la sal se apelmace", d:"Echa unos granos de arroz crudo dentro del salero. Absorben la humedad." },
+  { c:"🍳 General", t:"Hacer un sofrito perfecto", d:"Fuego medio-bajo. Cebolla primero, luego ajo y por último pimiento." },
+  { c:"🍟 Airfryer", t:"Patatas fritas crujientes", d:"Córtalas, lávalas y sécalas MUY bien. Un chorrito de aceite, 180°C 20-25 min y agita a mitad." },
+  { c:"🍕 Airfryer", t:"Recalentar pizza de ayer", d:"No uses el microondas. Ponla en la Airfryer a 160°C 3-4 minutos. Quedará crujiente." },
+  { c:"🍗 Airfryer", t:"Pollo crujiente sin harina", d:"Seca muy bien la piel, úntala con un poquito de aceite y sal, y ponla a 190°C con la piel hacia arriba." },
+  { c:"🥓 Airfryer", t:"Bacon perfecto", d:"Pon las tiras sin amontonar a 180°C 6-8 minutos. Sin aceite y queda crujiente." },
+  { c:"🧽 Airfryer", t:"Limpiar la Airfryer fácilmente", d:"Echa agua caliente con lavavajillas en la cesta y ponla a 160°C 5 minutos. Luego pasa una esponja." },
+  { c:"🤖 Thermomix", t:"Limpiar el vaso sin fregar", d:"Agua, lavavajillas y vinagre. Programa 10 segundos a velocidad 5. Se limpia sola." },
+  { c:"🤖 Thermomix", t:"Picar hielo", d:"Pon los cubitos en el vaso y programa 15 segundos a velocidad 5 o usa el Turbo." },
+  { c:"🤖 Thermomix", t:"Amasar sin pringarse", d:"Usa siempre la velocidad Espiga para masas. La masa no se pega a las manos." },
+  { c:"🤖 Thermomix", t:"Triturar sopas sin salpicar", d:"Quita el cubilete y pon un trapo encima. Empieza a velocidad 5 y sube poco a poco." },
+  { c:"🤖 Thermomix", t:"Cocer al vapor en el Varoma", d:"El agua debe estar hirviendo antes de poner el Varoma encima. Así el vapor es constante." },
+  { c:"🥞 Repostería", t:"Hacer tortitas esponjosas", d:"No mezcles demasiado la masa. Algunos grumos son buenos, si la mezclas en exceso quedan duras." },
+  { c:"🥞 Repostería", t:"Hacer crepes finas", d:"La masa debe quedar muy líquida. Déjala reposar en la nevera 30 minutos antes de hacerlos." },
+  { c:"🥚 Repostería", t:"Montar claras a punto de nieve", d:"El bol y las varillas deben estar limpios y secos, sin grasa ni yema. Añade una pizca de sal." },
+  { c:"🥚 Repostería", t:"Hacer merengue", d:"Añade el azúcar poco a poco (el doble del peso de las claras) sin dejar de batir hasta que haga picos." },
+  { c:"🍮 Repostería", t:"Hacer caramelo líquido casero", d:"Pon azúcar y un poquito de agua en una sartén. No remuevas, deja que tome color." },
+  { c:"🧈 Repostería", t:"Derretir chocolate sin que se queme", d:"Ponlo al baño María sin que el bol toque el agua. Remueve hasta que se derrita solo." },
+  { c:"🍋 Repostería", t:"Sacar la ralladura sin amargor", d:"Ralla solo la parte amarilla. La capa blanca de debajo (albedo) es la que amarga." },
+  { c:"🍰 Repostería", t:"Bizcocho sin que se baje", d:"Nunca abras el horno los primeros 20 minutos. Los cambios de temperatura hacen que se baje." },
+  { c:"🍰 Repostería", t:"Saber si un bizcocho está hecho", d:"Pincha el centro con un palillo. Si sale limpio, está listo." },
+  { c:"🍰 Repostería", t:"Desmoldar un bizcocho fácil", d:"Pasa un cuchillo por el borde, pon un plato encima y dale la vuelta. Da un golpecito al molde." },
+  { c:"🧁 Repostería", t:"Mantener las magdalenas altas", d:"Llena los moldes solo hasta 3/4. Hornea a temperatura alta los primeros minutos." },
+  { c:"🥧 Repostería", t:"Masa quebrada sin que se rompa", d:"Trabaja la masa con las manos muy frías y no la amases demasiado." },
+  { c:"🍩 Repostería", t:"Freír buñuelos o churros", d:"El aceite debe estar a 180°C. Si no tienes termómetro, echa un trocito de masa: si sube rápido, está listo." },
+  { c:"🌡️ Hornos", t:"Precalentar el horno siempre", d:"Tarda 10-15 min en alcanzar la temperatura real. Si no precalientas, el bizcocho no sube igual." },
+  { c:"🌡️ Hornos", t:"Limpiar el horno con bicarbonato", d:"Haz una pasta con bicarbonato y agua, úntala y déjala toda la noche. Pasa una esponja por la mañana." },
+  { c:"🌡️ Hornos", t:"Evitar que salte humo al asar", d:"Pon una bandeja con agua en el fondo del horno. Evita que la grasa caiga al fondo caliente y genere humo." },
+  { c:"🌡️ Hornos", t:"Gratinar sin quemar", d:"Tapa la bandeja con papel de aluminio si se dora muy rápido por arriba. Quítalo al final." },
+  { c:"🌡️ Hornos", t:"Saber si el horno calienta bien", d:"Compra un termómetro de horno. Muchos tienen desviaciones de 10 o 20 grados." },
+  { c:"📡 Microondas", t:"Ablandar mantequilla rápido", d:"Métela al microondas a baja potencia en tandas de 10 segundos. O rállala." },
+  { c:"📡 Microondas", t:"Recalentar comida sin que se seque", d:"Pon un vaso con agua dentro del microondas junto al plato. El vapor evitará que se reseque." },
+  { c:"📡 Microondas", t:"Desinfectar la bayeta", d:"Lava la bayeta, escúrrela y métela en el microondas 1 o 2 minutos." },
+  { c:"📡 Microondas", t:"Cocinar un huevo poché", d:"Pon agua en un bol, echa el huevo, pincha la yema y cubre con un plato. Cocina 50 segundos a máxima potencia." },
+  { c:"📡 Microondas", t:"Derretir queso sin que se queme", d:"Usa potencia media y tandas de 20 segundos. A máxima potencia se vuelve goma." },
+  { c:"📡 Microondas", t:"Quitar la piel a los tomates", d:"Hazles una cruz, ponlos en un bol con agua y calienta 2 minutos a máxima potencia." },
+  { c:"🧊 Congelación", t:"Congelar hierbas en aceite", d:"Pica perejil y mételo en una cubitera con aceite. Congélalo y usa un cubito para guisar." },
+  { c:"🧊 Congelación", t:"Descongelar carne rápido y seguro", d:"Métela en una bolsa cerrada y sumérgela en agua fría. Cambia el agua cada 30 minutos." },
+  { c:"🧊 Congelación", t:"Congelar vino o caldo sobrante", d:"Congélalo en cubiteras. Son perfectos para añadir sabor a guisos." },
+  { c:"🧊 Congelación", t:"Congelar carne picada", d:"Mete la carne en una bolsa y aplánala antes de cerrarla. Se congela y descongela muy rápido." },
+  { c:"🧊 Congelación", t:"Qué NO se debe congelar", d:"Lechuga, pepino, patatas crudas, huevos con cáscara, mayonesa ni quesos blandos." },
+  { c:"🧊 Congelación", t:"Congelar huevos batidos", d:"Bátelos, échales una pizca de sal y congélalos en un táper. Perfectos para tortillas." },
+  { c:"🗄️ Organización", t:"Ordenar la nevera correctamente", d:"Arriba: lácteos y cocinados. Medio: huevos y embutidos. Abajo: carne y pescado crudo. Cajones: frutas y verduras." },
+  { c:"🗄️ Organización", t:"Regla FIFO en la despensa", d:"Lo primero que entra es lo primero que sale. Pon los productos nuevos al fondo y los antiguos delante." },
+  { c:"🗄️ Organización", t:"Guardar las especias", d:"No las guardes encima del fuego. El calor las estropea. Guárdalas en un armario oscuro y seco." },
+  { c:"🗄️ Organización", t:"Reutilizar tarros de cristal", d:"Quita la pegatina con aceite o agua caliente. Son perfectos para guardar arroz, pasta o especias." },
+  { c:"🗄️ Organización", t:"Organizar el congelador", d:"Usa bolsas con cierre y apunta qué es y la fecha con rotulador permanente." },
+  { c:"🧽 Limpieza", t:"Limpiar la campana extractora", d:"Los filtros metálicos van al lavavajillas. El cuerpo se limpia con agua caliente y desengrasante." },
+  { c:"🧽 Limpieza", t:"Limpiar las juntas del baño o cocina", d:"Pasta de bicarbonato y agua oxigenada. Úntala con un cepillo de dientes viejo y aclara a los 15 minutos." },
+  { c:"🧽 Limpieza", t:"Quitar el olor a frito de la cocina", d:"Hierve agua con rodajas de limón y un chorrito de vinagre 10 minutos después de cocinar." },
+  { c:"🧽 Limpieza", t:"Limpiar la tabla de cortar", d:"Después de cortar carne, lávala con agua muy caliente y jabón, o frótala con limón y sal." },
+  { c:"🧽 Limpieza", t:"Limpiar el fregadero de acero", d:"Frota con bicarbonato y aclara con agua y vinagre. Quedará brillante." },
+  { c:"🧽 Limpieza", t:"Destapar el desagüe del fregadero", d:"Echa medio vaso de bicarbonato, un vaso de vinagre, deja 15 minutos y vierte agua muy caliente." },
+  { c:"🧽 Limpieza", t:"Quitar las manchas de la vitrocerámica", d:"Usa una rasqueta con cuidado para las manchas quemadas, y limpiador específico para el resto." },
+  { c:"🧽 Limpieza", t:"Limpiar el microondas fácil", d:"Pon un bol con agua y zumo de limón dentro 3 minutos. El vapor aflojará la grasa." },
+  { c:"🧽 Limpieza", t:"Quitar olores fuertes del táper", d:"Llénalo de agua con bicarbonato y déjalo toda la noche. Enjuaga por la mañana." },
+  { c:"🧽 Limpieza", t:"Quitar manchas de grasa de la ropa", d:"Échale polvos de talco o maicena encima para absorber la grasa antes de lavar." },
+  { c:"🧽 Limpieza", t:"Limpiar la nevera a fondo", d:"Limpia las estanterías con agua tibia y bicarbonato. Elimina olores y desinfecta." },
+  { c:"🧽 Limpieza", t:"Limpiar las hornillas de la cocina", d:"Mete la rejilla en una bolsa con un chorro de amoníaco y déjala al aire libre toda la noche." },
+  { c:"🔪 Cuchillos", t:"Afilar un cuchillo sin piedra", d:"Pasa el cuchillo por la parte rugosa de abajo de un plato de cerámica en ángulo de 20 grados." },
+  { c:"🔪 Cuchillos", t:"Mantener los cuchillos afilados", d:"Lávalos a mano y sécalos inmediatamente. Nunca los metas en el lavavajillas." },
+  { c:"🔪 Cuchillos", t:"Cortar tomates sin chafarlos", d:"Usa un cuchillo de sierra (como el del pan) para no aplastarlos." },
+  { c:"🔪 Cuchillos", t:"Cómo coger bien el cuchillo", d:"Pellizca la hoja donde se une con el mango con el índice y el pulgar. Sujeta el mango con el resto de la mano." },
+  { c:"🔪 Cuchillos", t:"Cortar queso sin que se rompa", d:"Pasa el cuchillo por agua caliente antes de cortar quesos curados o azules." },
+  { c:"🧀 Quesos", t:"Conservar quesos en aceite", d:"Corta el queso fresco en taquitos y mételo en un tarro con aceite de oliva y hierbas." },
+  { c:"🍯 Conservas", t:"Esterilizar tarros de cristal", d:"Lava los tarros y hiérvelos en agua 10 minutos. Sécalos boca abajo sobre un paño limpio." },
+  { c:"🍯 Conservas", t:"Hacer mermelada casera", d:"Usa el mismo peso de fruta que de azúcar. Echa una gota en un plato frío: si no se corre, está hecha." }
+];
+
+let RECETAS = [];
+RECETAS = RECETAS.concat([
+  { n:"Tortilla de patatas (Tradicional)", t:40, ing:["4 Huevos frescos","3 Patatas medianas","1 Cebolla","Aceite de oliva","Sal"], pasos:["1. Pelar y cortar patatas y cebolla en láminas.","2. Freír en aceite a fuego medio 20 min.","3. Escurrir y mezclar con huevos batidos.","4. Cuajar en sartén 3-4 min por cada lado."] },
+  { n:"Lentejas estofadas (Tradicional)", t:60, ing:["300g Legumbres secas","1 Chorizo","1 Cebolla","2 Zanahorias","2 Ajos","Aceite de oliva"], pasos:["1. Pochar cebolla, ajo y zanahoria (10 min).","2. Añadir chorizo y lentejas.","3. Cubrir con agua o caldo y cocer 45 min. Rectificar de sal."] },
+  { n:"Pollo al champiñón con nata", t:30, ing:["500g Pollo","250g Champiñones","200ml Nata líquida","1 Cebolla","Aceite"], pasos:["1. Dorar el pollo troceado en una sartén.","2. Añadir cebolla y champiñones laminados (5 min).","3. Verter nata y cocer 10 min a fuego suave."] },
+  { n:"Arroz con pollo", t:45, ing:["300g Arroz","400g Pollo","1 Pimiento","1 Cebolla","2 Ajos","Caldo"], pasos:["1. Sofreír pollo troceado (10 min).","2. Añadir pimiento, cebolla y ajo picados.","3. Incorporar arroz, doble de agua caliente y cocer 18 min. Reposar."] },
+  { n:"Macarrones con tomate (Tradicional)", t:25, ing:["250g Pasta","400g Tomate triturado","1 Cebolla","2 Ajos","Aceite"], pasos:["1. Cocer pasta en agua hirviendo 10 min.","2. Sofreír ajo y cebolla picados.","3. Añadir tomate, cocer 10 min y mezclar con la pasta."] },
+  { n:"Pisto manchego", t:40, ing:["2 Tomates","1 Calabacín","1 Berenjena","1 Pimiento verde","1 Cebolla"], pasos:["1. Picar verduras en dados.","2. Pochar cebolla y pimiento (10 min).","3. Añadir calabacín y berenjena (10 min).","4. Incorporar tomate y cocinar 15 min."] },
+  { n:"Crema de champiñones", t:25, ing:["300g Champiñones","1 Cebolla","200ml Nata","500ml Caldo","Aceite"], pasos:["1. Pochar cebolla y champiñones.","2. Añadir caldo y cocer 10 min.","3. Triturar con la batidora y añadir la nata."] },
+  { n:"Croquetas de jamón (Tradicional)", t:45, ing:["500ml Leche","50g Harina","50g Mantequilla","100g Jamón serrano","1 Huevo","Pan rallado"], pasos:["1. Hacer bechamel espesa con el jamón picado.","2. Enfriar en nevera 2 horas.","3. Formar, pasar por huevo y pan rallado.","4. Freír en abundante aceite caliente."] },
+  { n:"Cocido madrileño", t:120, ing:["300g Garbanzos","300g Ternera","1 Muslo de pollo","1 Chorizo","2 Zanahorias","Patata"], pasos:["1. Remojar garbanzos la noche anterior.","2. Cocer carnes 1 hora.","3. Añadir garbanzos y verduras. Cocer 45 min.","4. Añadir chorizo al final."] },
+  { n:"Albóndigas en salsa", t:50, ing:["500g Carne picada","1 Huevo","2 Ajos","3 cdas Harina","1 Cebolla","400g Tomate triturado"], pasos:["1. Mezclar carne, huevo y ajo. Formar bolitas y enharinar.","2. Freír hasta dorar y reservar.","3. Pochar cebolla, añadir tomate, vino y cocer 10 min.","4. Añadir albóndigas y cocer 15 min."] },
+  { n:"Ensaladilla rusa", t:40, ing:["3 Patatas","2 Zanahorias","100g Guisantes","2 Latas de atún","4 cdas Mayonesa","2 Huevos"], pasos:["1. Cocer patatas, zanahorias y huevos (20 min).","2. Cocer guisantes 5 min.","3. Picar todo en dados pequeños.","4. Mezclar con atún y mayonesa. Enfriar."] },
+  { n:"Merluza al horno (Tradicional)", t:30, ing:["4 Lomos de merluza","2 Patatas","1 Cebolla","1 Limón","Aceite"], pasos:["1. Pochar patata y cebolla en rodajas (5 min).","2. Poner en bandeja con merluza encima.","3. Echar limón, perejil y aceite. Hornear 200°C 15-20 min."] },
+  { n:"Sopa de fideos (Tradicional)", t:20, ing:["1 Litro de caldo","100g Fideos","1 Cebolla","1 Zanahoria"], pasos:["1. Pochar cebolla y zanahoria (5 min).","2. Añadir caldo y llevar a ebullición.","3. Echar fideos y cocer 4-5 min."] },
+  { n:"Revuelto de champiñones", t:15, ing:["4 Huevos","200g Champiñones","2 Ajos","Aceite"], pasos:["1. Saltear ajos y champiñones (5 min).","2. Batir huevos con sal.","3. Echar a la sartén y remover hasta cuajar."] },
+  { n:"Patatas a la riojana", t:45, ing:["4 Patatas","1 Chorizo","1 Pimiento verde","1 Cebolla","1 cda Pimentón","500ml Caldo"], pasos:["1. Sofreír cebolla, ajo y pimiento.","2. Añadir chorizo y pimentón.","3. Incorporar patatas y caldo. Cocer 25 min."] },
+  { n:"Pimientos de Padrón", t:10, ing:["250g Pimientos de Padrón","Aceite de oliva","Sal gorda"], pasos:["1. Lavar y secar pimientos.","2. Freír en aceite muy caliente hasta que se arruguen.","3. Escurrir y echar sal gorda."] },
+  { n:"Flan de huevo (Tradicional)", t:50, ing:["4 Huevos","500ml Leche","150g Azúcar","Vainilla","Azúcar para caramelo"], pasos:["1. Hacer caramelo y cubrir el molde.","2. Batir huevos, leche, azúcar y vainilla.","3. Baño María en horno a 180°C 40 min."] },
+  { n:"Arroz con leche (Tradicional)", t:45, ing:["150g Arroz","1 Litro de leche","120g Azúcar","Piel de limón","Canela"], pasos:["1. Cocer arroz en agua 5 min.","2. Añadir leche, azúcar, limón y canela.","3. Cocer a fuego lento 35-40 min removiendo."] },
+  { n:"Tarta de queso al horno", t:60, ing:["500g Queso fresco","4 Huevos","150g Azúcar","200ml Nata","2 cdas Harina"], pasos:["1. Batir queso y azúcar.","2. Añadir huevos, nata y harina.","3. Hornear a 200°C 40 min. Enfriar en nevera."] },
+  { n:"Bizcocho de yogur (Tradicional)", t:45, ing:["1 Yogur natural","3 Huevos","200g Azúcar","250g Harina","1 Sobre de levadura","120ml Aceite","Limón"], pasos:["1. Batir huevos y azúcar.","2. Añadir yogur, aceite y ralladura.","3. Incorporar harina y levadura.","4. Hornear a 180°C 35-40 min."] },
+  { n:"Ternera guisada (Tradicional)", t:90, ing:["600g Ternera","2 Zanahorias","1 Cebolla","200ml Vino tinto","2 cdas Harina","400ml Caldo"], pasos:["1. Pasar carne por harina y dorar.","2. Pochar cebolla y zanahoria.","3. Añadir vino, caldo y carne. Cocer a fuego lento 1h 30m."] },
+  { n:"Mejillones al vapor", t:15, ing:["1 kg Mejillones","1 Limón","Laurel","100ml Vino blanco"], pasos:["1. Limpiar mejillones.","2. Olla con vino, laurel y un poco de agua.","3. Cocer tapados hasta que se abran (3-5 min)."] },
+  { n:"Ensalada de garbanzos", t:10, ing:["400g Garbanzos cocidos","2 Tomates","1 Cebolla pequeña","1 Lata de atún"], pasos:["1. Escurrir y lavar garbanzos.","2. Picar tomate y cebolla.","3. Mezclar todo y aliñar con aceite y vinagre."] },
+  { n:"Pollo asado al limón", t:60, ing:["1 Pollo entero","2 Limones","3 Ajos","Tomillo","4 Patatas"], pasos:["1. Untar pollo con aceite, ajo, tomillo y limón.","2. Poner en bandeja con patatas.","3. Hornear a 200°C 50-60 min."] },
+  { n:"Tofu salteado con verduras", t:20, ing:["250g Tofu firme","1 Pimiento","1 Cebolla","1 Calabacín","3 cdas Salsa de soja"], pasos:["1. Dorar tofu en dados y reservar.","2. Saltear verduras en tiras (5-7 min).","3. Añadir tofu y soja. Saltear 2 min."] }
+]);
+RECETAS = RECETAS.concat([
+  { n:"Patatas fritas crujientes (Airfryer)", t:25, ing:["3 Patatas","1 cda Aceite","Sal"], pasos:["1. Pelar y cortar en bastones.","2. Secar bien con un paño.","3. Mezclar con aceite y sal.","4. Airfryer a 180°C 20-25 min, agitando a mitad."] },
+  { n:"Alitas de pollo adobadas (Airfryer)", t:25, ing:["8 Alitas","1 cda Pimentón","1 cda Miel","2 Ajos"], pasos:["1. Mezclar ajos, pimentón, miel y aceite.","2. Embadurnar alitas.","3. Airfryer a 190°C 20-25 min, girando a mitad."] },
+  { n:"Salmón al limón y eneldo (Airfryer)", t:15, ing:["2 Lomos de salmón","1 Limón","Eneldo seco"], pasos:["1. Secar salmón.","2. Pincelar con aceite, sal, eneldo y limón.","3. Airfryer a 180°C 10-12 min."] },
+  { n:"Croquetas de jamón (Airfryer)", t:45, ing:["500ml Leche","50g Harina","50g Mantequilla","100g Jamón","1 Huevo","Pan rallado"], pasos:["1. Hacer bechamel con jamón. Enfriar 2h.","2. Formar, pasar por huevo y pan rallado.","3. Airfryer a 200°C 10-12 min, rociadas con aceite."] },
+  { n:"Berenjenas rebozadas (Airfryer)", t:20, ing:["1 Berenjena","1 Huevo","Pan rallado"], pasos:["1. Cortar en rodajas y dejar en agua salada 10 min.","2. Secar, pasar por huevo y pan rallado.","3. Airfryer a 200°C 12-15 min, dando la vuelta."] },
+  { n:"Lubina a la sal (Airfryer)", t:25, ing:["1 Lubina entera","Sal gorda","1 Limón"], pasos:["1. Cubrir lubina con sal gorda.","2. Airfryer a 200°C 18-20 min.","3. Romper costra y servir con limón."] },
+  { n:"Salsa de tomate casera (Thermomix)", t:35, ing:["800g Tomate triturado","1 Cebolla","2 Ajos","50ml Aceite","1 cda Azúcar"], pasos:["1. Picar cebolla y ajo 5 seg/vel 5.","2. Sofreír 10 min/Varoma/vel 1.","3. Añadir tomate y azúcar. Cocinar 20 min/Varoma/vel 1."] },
+  { n:"Bechamel rápida (Thermomix)", t:10, ing:["500ml Leche","40g Harina","40g Mantequilla","Nuez moscada"], pasos:["1. Poner todo en el vaso.","2. Cocinar 7 min / 90°C / vel 4."] },
+  { n:"Crema de calabacín (Thermomix)", t:30, ing:["2 Calabacines","1 Patata","1 Cebolla","500ml Caldo","100g Queso fresco"], pasos:["1. Trocear y sofreír 10 min/Varoma/vel 1.","2. Añadir caldo y cocer 15 min/100°C/vel 1.","3. Añadir queso y triturar 1 min/vel 5-10."] },
+  { n:"Lentejas estofadas (Thermomix)", t:45, ing:["300g Lentejas remojadas","1 Chorizo","1 Zanahoria","1 Cebolla","700ml Caldo"], pasos:["1. Picar cebolla y zanahoria 5 seg/vel 5.","2. Sofreír 8 min/Varoma/vel 1.","3. Añadir resto ingredientes. Cocinar 30 min/100°C/giro izq/vel cuchara."] },
+  { n:"Arroz con leche (Thermomix)", t:45, ing:["150g Arroz","1 Litro de leche","120g Azúcar","Piel de limón","Canela"], pasos:["1. Poner todo en el vaso.","2. Cocinar 45 min/90°C/giro izq/vel cuchara (sin cubilete)."] },
+  { n:"Pollo al ajillo", t:35, ing:["1 Pollo troceado","6 Ajos","100ml Vino blanco","Perejil"], pasos:["1. Dorar pollo.","2. Añadir ajos laminados.","3. Echar vino y evaporar.","4. Cocer a fuego lento 20 min."] },
+  { n:"Macarrones con tomate (Thermomix)", t:25, ing:["250g Macarrones","400g Tomate triturado","1 Cebolla","2 Ajos"], pasos:["1. Cocer pasta.","2. Picar ajo y cebolla 5 seg/vel 5. Sofreír 5 min/Varoma/vel 1.","3. Añadir tomate y cocer 10 min/Varoma/vel 1."] },
+  { n:"Muslos de pollo al limón (Airfryer)", t:30, ing:["4 Muslos","2 Limones","Tomillo","Pimienta"], pasos:["1. Pincelar muslos con aceite y especias.","2. Airfryer a 190°C 25 min con rodajas de limón, girando a mitad."] },
+  { n:"Verduras asadas (Airfryer)", t:25, ing:["1 Calabacín","1 Pimiento rojo","1 Cebolla","1 Berenjena"], pasos:["1. Cortar en trozos medianos.","2. Mezclar con aceite y sal.","3. Airfryer a 200°C 20 min, removiendo a mitad."] },
+  { n:"Flan de huevo (Thermomix)", t:50, ing:["4 Huevos","500ml Leche","150g Azúcar","Vainilla","Caramelo"], pasos:["1. Caramelo en moldes.","2. Mezclar leche, huevos, azúcar y vainilla 20 seg/vel 3.","3. Verter y baño María horno 180°C 40 min."] },
+  { n:"Bizcocho de yogur (Thermomix)", t:45, ing:["1 Yogur","3 Huevos","200g Azúcar","250g Harina","1 Levadura","120ml Aceite","Limón"], pasos:["1. Batir huevos y azúcar 3 min/37°C/vel 3.","2. Añadir yogur, aceite y limón 10 seg/vel 3.","3. Añadir harina y levadura 15 seg/vel 3. Hornear 180°C 35 min."] },
+  { n:"Sopa de fideos (Thermomix)", t:20, ing:["1 Litro caldo","100g Fideos","1 Cebolla","1 Zanahoria"], pasos:["1. Picar cebolla y zanahoria 5 seg/vel 5. Sofreír 5 min/Varoma/vel 1.","2. Añadir caldo 8 min/100°C/vel 1.","3. Fideos 4 min/100°C/giro izq/vel cuchara."] },
+  { n:"Revuelto de champiñones y gambas", t:15, ing:["4 Huevos","200g Champiñones","150g Gambas","2 Ajos"], pasos:["1. Saltear ajos, champiñones y gambas (5 min).","2. Echar huevos batidos y remover hasta cuajar."] },
+  { n:"Paella valenciana", t:60, ing:["300g Arroz","300g Pollo","200g Conejo","100g Judías verdes","1 Tomate rallado","Azafrán","Caldo"], pasos:["1. Dorar pollo y conejo en paella.","2. Añadir judías y tomate.","3. Echar arroz y caldo caliente con azafrán.","4. Cocer 18 min (fuego fuerte 10 min, luego suave)."] },
+  { n:"Salmorejo cordobés", t:15, ing:["1 kg Tomates maduros","1 Diente de ajo","100g Pan del día anterior","50ml Aceite de oliva","Vinagre","Sal"], pasos:["1. Triturar tomates, ajo y pan (remojado).","2. Emulsionar añadiendo el aceite poco a poco.","3. Aliñar con vinagre y sal. Enfriar 2 horas."] },
+  { n:"Gazpacho andaluz", t:15, ing:["1 kg Tomates","1 Pimiento verde","1 Pepino","1 Cebolla pequeña","50ml Aceite","Vinagre"], pasos:["1. Trocear todas las verduras.","2. Triturar con aceite, vinagre y sal.","3. Colar y enfriar en la nevera."] },
+  { n:"Lasaña de carne", t:60, ing:["12 Placas de lasaña","500g Carne picada","400g Tomate triturado","1 Cebolla","200ml Bechamel","Queso rallado"], pasos:["1. Cocer placas de lasaña.","2. Sofreír carne con cebolla y tomate (15 min).","3. Montar capas: pasta, carne, bechamel.","4. Cubrir con queso y gratinar 15 min a 200°C."] },
+  { n:"Espaguetis a la carbonara", t:20, ing:["300g Espaguetis","150g Bacon o panceta","3 Yemas de huevo","50g Queso parmesano","Pimienta negra"], pasos:["1. Cocer pasta.","2. Dorar bacon en sartén.","3. Mezclar yemas con queso y pimienta.","4. Mezclar pasta caliente con bacon y la mezcla de huevo (fuera del fuego)."] },
+  { n:"Tarta de Santiago", t:50, ing:["250g Almendra molida","5 Huevos","200g Azúcar","Ralladura de limón","Azúcar glas"], pasos:["1. Batir huevos con azúcar.","2. Añadir almendra molida y ralladura.","3. Hornear a 180°C 35 min.","4. Decorar con azúcar glas y la cruz de Santiago."] }
+]);
+RECETAS = RECETAS.concat([
+  { n:"Sopa castellana de ajo", t:25, ing:["6 Ajos","150g Pan duro","1 cda Pimentón","1 Litro de caldo","2 Huevos","Aceite de oliva"], pasos:["1. Dorar los ajos laminados en aceite.","2. Añadir el pan en trozos y el pimentón (fuera del fuego).","3. Verter el caldo y cocer 10 min.","4. Escalfar los huevos en la sopa."] },
+  { n:"Bacalao al pil-pil", t:30, ing:["4 Lomos de bacalao","4 Ajos","1 Guindilla","200ml Aceite de oliva"], pasos:["1. Dorar ajos y guindilla en aceite. Retirar.","2. Cocer el bacalao en ese aceite a fuego muy bajo.","3. Mover la cazuela en círculos para ligar la salsa.","4. Servir con los ajos."] },
+  { n:"Albóndigas de pollo al limón (Airfryer)", t:25, ing:["500g Carne picada de pollo","1 Huevo","1 Limón","Perejil","Pan rallado"], pasos:["1. Mezclar pollo, huevo, zumo de limón, perejil y pan rallado.","2. Formar bolitas.","3. Airfryer a 180°C durante 15 min."] },
+  { n:"Calamares a la romana (Airfryer)", t:25, ing:["500g Anillas de calamar","1 Huevo","Harina","Pan rallado"], pasos:["1. Pasar los calamares por harina, huevo y pan rallado.","2. Rocíar con un poco de aceite.","3. Airfryer a 200°C durante 10-12 min."] },
+  { n:"Pechugas de pollo empanadas (Airfryer)", t:20, ing:["2 Pechugas de pollo","1 Huevo","Pan rallado","Especias al gusto"], pasos:["1. Cortar pechugas en filetes finos.","2. Pasar por huevo batido y pan rallado con especias.","3. Airfryer a 190°C durante 12-15 min."] },
+  { n:"Arroz tres delicias (Thermomix)", t:30, ing:["300g Arroz","100g Guisantes","100g Jamón cocido","2 Huevos","2 Zanahorias","Salsa de soja"], pasos:["1. Cocer el arroz y reservar.","2. Hacer tortilla y trocear.","3. Rehogar verduras y jamón, añadir arroz y soja. Mezclar."] },
+  { n:"Mermelada de fresa (Thermomix)", t:40, ing:["500g Fresas","250g Azúcar","Zumo de 1/2 limón"], pasos:["1. Trocear fresas 4 seg/vel 4.","2. Añadir azúcar y limón.","3. Cocinar 30 min / Varoma / vel 1 (sin cubilete)."] },
+  { n:"Hummus de garbanzo (Thermomix)", t:10, ing:["400g Garbanzos cocidos","1 Ajo","2 cdas Tahini","Zumo de limón","Aceite de oliva","Sal"], pasos:["1. Poner todos los ingredientes en el vaso.","2. Triturar 1 min / vel progresiva 5-10.","3. Servir con un chorrito de aceite por encima."] },
+  { n:"Pollo al curry con leche de coco", t:35, ing:["500g Pollo","1 Cebolla","1 Pimiento","400ml Leche de coco","2 cdas Curry en polvo"], pasos:["1. Dorar el pollo.","2. Pochar cebolla y pimiento.","3. Añadir curry y leche de coco.","4. Cocer 15 min a fuego lento."] },
+  { n:"Albóndigas en salsa de almendras", t:50, ing:["500g Carne picada","1 Huevo","1 Cebolla","50g Almendras molidas","400ml Caldo"], pasos:["1. Formar albóndigas y freírlas.","2. Pochar cebolla, añadir almendras y caldo.","3. Cocer 15 min y batir la salsa.","4. Añadir las albóndigas y servir."] },
+  { n:"Arroz al horno", t:50, ing:["300g Arroz","1 Cebolla","1 Tomate","1 Pimiento","1 Chorizo","Garbanzos cocidos","Caldo"], pasos:["1. Pochar verduras y chorizo en cazuela de barro.","2. Añadir arroz, garbanzos y caldo.","3. Hornear a 200°C 20 min."] },
+  { n:"Bacalao a la vizcaína", t:40, ing:["4 Lomos de bacalao","2 Pimientos choriceros","1 Cebolla","Tomate triturado","Aceite"], pasos:["1. Pochar cebolla y añadir el tomate.","2. Añadir la pulpa de los pimientos choriceros.","3. Cocer el bacalao en la salsa 15 min."] },
+  { n:"Calamares en su tinta", t:45, ing:["500g Calamares","1 Cebolla","1 Tomate","1 Sobre de tinta de calamar","Vino blanco"], pasos:["1. Sofreír cebolla y tomate.","2. Añadir calamares y vino.","3. Disolver la tinta en agua y añadir.","4. Cocer 30 min a fuego lento."] },
+  { n:"Callos a la madrileña", t:120, ing:["1 kg Callos","1 Chorizo","1 Morcilla","1 Cebolla","Pimentón","Guindilla"], pasos:["1. Cocer los callos 1h 30m.","2. Hacer un sofrito de cebolla, pimentón y guindilla.","3. Añadir chorizo y morcilla.","4. Cocer todo junto 30 min más."] },
+  { n:"Conejo al ajillo", t:45, ing:["1 Conejo troceado","8 Ajos","Vino blanco","Tomillo","Aceite"], pasos:["1. Dorar el conejo.","2. Añadir ajos laminados.","3. Echar vino y tomillo.","4. Cocer 25 min a fuego lento."] },
+  { n:"Costillas de cerdo a la barbacoa", t:60, ing:["1 kg Costillas","Salsa barbacoa","Miel","Ajo en polvo"], pasos:["1. Sazonar costillas y hornear 30 min a 180°C.","2. Pintar con salsa barbacoa y miel.","3. Hornear 20 min más."] },
+  { n:"Crema de calabaza", t:30, ing:["500g Calabaza","1 Patata","1 Cebolla","Caldo","Nata"], pasos:["1. Pochar cebolla y calabaza.","2. Cubrir con caldo y cocer 20 min.","3. Triturar y añadir nata."] },
+  { n:"Empanadillas de atún", t:40, ing:["Masa de empanadilla","3 Latas de atún","Tomate frito","1 Cebolla","Huevo"], pasos:["1. Pochar cebolla y mezclar con atún y tomate.","2. Rellenar las masas y cerrar.","3. Pintar con huevo y hornear 15 min a 200°C."] },
+  { n:"Espinacas a la catalana", t:15, ing:["500g Espinacas","50g Pasas","50g Piñones","2 Ajos","Aceite"], pasos:["1. Dorar ajos laminados.","2. Añadir pasas y piñones.","3. Incorporar espinacas y saltear hasta que pierdan el agua."] },
+  { n:"Fabada asturiana", t:120, ing:["500g Fabes","1 Chorizo","1 Morcilla","1 Lacón","1 Cebolla","Azafrán"], pasos:["1. Remojar fabes la noche anterior.","2. Cocer las carnes 1 hora.","3. Añadir fabes y cocer a fuego lento 1h 30m.","4. Dejar reposar antes de servir."] },
+  { n:"Garbanzos con espinacas", t:30, ing:["400g Garbanzos cocidos","200g Espinacas","1 Cebolla","2 Ajos","Pimentón","Comino"], pasos:["1. Sofreír ajo, cebolla, pimentón y comino.","2. Añadir espinacas y cocinar.","3. Incorporar garbanzos y un poco de agua.","4. Cocer 10 min."] },
+  { n:"Huevos rellenos", t:20, ing:["4 Huevos","1 Lata de atún","Mayonesa","Tomate frito"], pasos:["1. Cocer huevos y partirlos por la mitad.","2. Mezclar yemas con atún y mayonesa.","3. Rellenar las claras.","4. Cubrir con un poco de tomate frito."] },
+  { n:"Judías verdes con jamón", t:25, ing:["500g Judías verdes","100g Jamón en taquitos","2 Ajos","Aceite"], pasos:["1. Cocer las judías 10 min.","2. Saltear ajos y jamón.","3. Añadir judías y dar una vuelta."] },
+  { n:"Lomo de cerdo con salsa de setas", t:35, ing:["4 Filetes de lomo","200g Setas","1 Cebolla","Nata líquida","Vino blanco"], pasos:["1. Dorar los filetes y reservar.","2. Pochar cebolla y setas.","3. Añadir vino y nata.","4. Cocer con la carne 10 min."] },
+  { n:"Marmitako de atún", t:45, ing:["500g Atún","4 Patatas","1 Pimiento verde","1 Cebolla","Tomate","Vino blanco"], pasos:["1. Pochar cebolla, pimiento y tomate.","2. Añadir patatas troceadas y vino.","3. Cubrir con agua y cocer 25 min.","4. Añadir el atún en dados y cocer 5 min."] }
+]);
+RECETAS = RECETAS.concat([
+  { n:"Menestra de verduras con jamón", t:30, ing:["500g Menestra congelada","100g Jamón","1 Cebolla","Aceite"], pasos:["1. Cocer la menestra.","2. Pochar cebolla y añadir jamón.","3. Saltear todo junto."] },
+  { n:"Merluza en salsa verde", t:30, ing:["4 Lomos de merluza","2 Ajos","Perejil","Harina","Vino blanco","Caldo"], pasos:["1. Dorar ajos y perejil.","2. Añadir harina y vino.","3. Echar caldo y cocer la merluza 10 min."] },
+  { n:"Migas con chorizo", t:25, ing:["300g Pan duro","2 Ajos","1 Chorizo","Pimentón","Aceite"], pasos:["1. Picar pan en migas.","2. Sofreír ajos y chorizo.","3. Añadir pimentón y migas.","4. Remover hasta que estén crujientes."] },
+  { n:"Paella de marisco", t:60, ing:["300g Arroz","500g Marisco mixto","1 Pimiento","1 Cebolla","Tomate","Azafrán","Caldo"], pasos:["1. Pochar verduras.","2. Añadir marisco y sofreír.","3. Incorporar arroz y caldo con azafrán.","4. Cocer 18 min."] },
+  { n:"Patatas al ajillo", t:20, ing:["4 Patatas","4 Ajos","Pimentón","Aceite","Caldo"], pasos:["1. Dorar patatas en aceite.","2. Añadir ajos laminados y pimentón.","3. Echar un poco de caldo.","4. Cocer hasta que evapore."] },
+  { n:"Pimientos rellenos de carne", t:50, ing:["2 Pimientos grandes","300g Carne picada","1 Cebolla","Tomate triturado","Queso"], pasos:["1. Pochar cebolla y carne.","2. Añadir tomate y cocer.","3. Rellenar los pimientos.","4. Hornear a 180°C 30 min con queso encima."] },
+  { n:"Pollo a la naranja", t:40, ing:["1 Pollo troceado","2 Naranjas","1 Cebolla","Salsa de soja","Miel"], pasos:["1. Dorar el pollo.","2. Añadir cebolla.","3. Echar zumo de naranja, soja y miel.","4. Cocer 20 min."] },
+  { n:"Potaje de garbanzos con bacalao", t:45, ing:["400g Garbanzos cocidos","200g Bacalao desmigado","Espinacas","1 Cebolla","Pimentón"], pasos:["1. Pochar cebolla y pimentón.","2. Añadir bacalao y espinacas.","3. Incorporar garbanzos y un poco de agua.","4. Cocer 15 min."] },
+  { n:"Puré de patatas", t:25, ing:["4 Patatas","Leche","Mantequilla","Sal","Nuez moscada"], pasos:["1. Cocer patatas 20 min.","2. Machacar.","3. Añadir leche caliente y mantequilla.","4. Remover hasta obtener puré."] },
+  { n:"Rabo de toro guisado", t:120, ing:["1 kg Rabo de toro","2 Zanahorias","1 Cebolla","Vino tinto","Harina","Caldo"], pasos:["1. Enharinar y dorar la carne.","2. Pochar verduras.","3. Añadir vino, caldo y carne.","4. Cocer a fuego lento 2 horas."] },
+  { n:"Sardinas asadas", t:20, ing:["12 Sardinas","Sal gorda","Limón","Aceite"], pasos:["1. Limpiar sardinas y sazonar.","2. Asar en plancha muy caliente.","3. Servir con limón."] },
+  { n:"Sepia a la plancha con alioli", t:15, ing:["1 Sepia","2 Ajos","Aceite","Limón"], pasos:["1. Limpiar sepia y cortar en tiras.","2. Asar en plancha caliente 3 min por lado.","3. Acompañar con alioli."] },
+  { n:"Tarta de manzana", t:50, ing:["3 Manzanas","1 Masa quebrada","2 Huevos","100ml Nata","Azúcar","Canela"], pasos:["1. Forrar molde con masa.","2. Batir huevos, nata, azúcar y canela.","3. Colocar manzanas en láminas.","4. Hornear 180°C 40 min."] },
+  { n:"Torrijas de leche", t:25, ing:["1 Pan de torrijas","500ml Leche","Azúcar","Canela","2 Huevos","Aceite"], pasos:["1. Hervir leche con azúcar y canela.","2. Remojar el pan.","3. Pasar por huevo.","4. Freír y rebozar en azúcar."] },
+  { n:"Crema catalana", t:30, ing:["1 Litro de leche","6 Yemas","150g Azúcar","Maicena","Piel de limón","Canela"], pasos:["1. Hervir leche con limón y canela.","2. Mezclar yemas, azúcar y maicena.","3. Cuajar al fuego.","4. Quemar azúcar por encima."] },
+  { n:"Natillas caseras", t:25, ing:["500ml Leche","3 Yemas","100g Azúcar","Maicena","Vainilla"], pasos:["1. Hervir la leche.","2. Mezclar yemas, azúcar y maicena.","3. Añadir leche caliente y cuajar al fuego.","4. Enfriar con galleta o canela."] },
+  { n:"Arroz con verduras (Airfryer)", t:30, ing:["200g Arroz","1 Calabacín","1 Pimiento","1 Cebolla","Caldo"], pasos:["1. Pochar verduras en sartén.","2. Mezclar con arroz y caldo en molde apto.","3. Airfryer a 180°C 20 min."] },
+  { n:"Pollo asado con patatas (Airfryer)", t:45, ing:["4 Cuartos de pollo","4 Patatas","Tomillo","Aceite","Sal"], pasos:["1. Pincelar pollo y patatas con aceite.","2. Sazonar.","3. Airfryer a 180°C 35-40 min, agitando patatas a mitad."] },
+  { n:"Tarta de queso (Airfryer)", t:40, ing:["300g Queso fresco","2 Huevos","100g Azúcar","100ml Nata","1 cda Harina"], pasos:["1. Batir todos los ingredientes.","2. Verter en molde apto para Airfryer.","3. Cocinar a 160°C 30 min.","4. Enfriar en nevera."] },
+  { n:"Croquetas de pollo (Thermomix)", t:60, ing:["500ml Leche","50g Harina","50g Mantequilla","200g Pollo cocido","1 Huevo","Pan rallado"], pasos:["1. Hacer bechamel 7 min/90°C/vel 4.","2. Añadir pollo desmenuzado.","3. Enfriar 2h y formar croquetas.","4. Empanar y freír."] },
+  { n:"Salsa alioli rápida (Thermomix)", t:5, ing:["1 Huevo","2 Ajos","200ml Aceite de girasol","Sal","Zumo de limón"], pasos:["1. Poner huevo, ajos y sal en el vaso.","2. Programar 2 min / vel 5 y echar aceite poco a poco.","3. Añadir limón y mezclar 5 seg/vel 3."] },
+  { n:"Masa de pizza casera (Thermomix)", t:15, ing:["300g Harina","150ml Agua","15g Levadura fresca","1 cda Aceite","1 cdta Sal"], pasos:["1. Mezclar agua y levadura 10 seg/vel 2.","2. Añadir harina, aceite y sal. Amasar 2 min/vel espiga.","3. Dejar levar 1 hora."] },
+  { n:"Pisto con huevo (Thermomix)", t:35, ing:["1 Calabacín","1 Pimiento","1 Cebolla","2 Tomates","4 Huevos"], pasos:["1. Trocear verduras 5 seg/vel 5.","2. Sofreír 15 min/Varoma/vel 1.","3. Añadir huevos batidos y cocinar 3 min/100°C/giro izq/vel cuchara."] },
+  { n:"Bizcocho de zanahoria", t:50, ing:["2 Zanahorias","3 Huevos","200g Azúcar","250g Harina","1 Levadura","120ml Aceite"], pasos:["1. Rallar zanahorias.","2. Batir huevos y azúcar.","3. Añadir aceite, zanahoria, harina y levadura.","4. Hornear 180°C 40 min."] },
+  { n:"Espaguetis a la boloñesa", t:35, ing:["300g Espaguetis","400g Carne picada","400g Tomate triturado","1 Cebolla","1 Zanahoria","Vino tinto"], pasos:["1. Pochar cebolla y zanahoria picadas.","2. Añadir carne y dorar.","3. Echar vino, dejar evaporar y añadir tomate. Cocer 20 min.","4. Mezclar con la pasta cocida."] }
+]);
+RECETAS = RECETAS.concat([
+  { n:"Sopa de cocido", t:20, ing:["1 Litro de caldo de cocido","100g Fideos finos","1 Huevo cocido"], pasos:["1. Colar el caldo de haber hecho cocido.","2. Llevar a ebullición y echar los fideos.","3. Cocer 4 minutos y servir con huevo picado."] },
+  { n:"Pollo guisado con patatas", t:50, ing:["1 Pollo troceado","3 Patatas","1 Cebolla","1 Pimiento","Vino blanco","Caldo"], pasos:["1. Dorar el pollo en una olla.","2. Pochar cebolla y pimiento.","3. Añadir vino, caldo y patatas troceadas.","4. Cocer 30 min hasta que la patata esté tierna."] },
+  { n:"Merluza a la romana", t:20, ing:["4 Lomos de merluza","1 Huevo","Harina","Aceite de oliva","Limón"], pasos:["1. Secar bien la merluza y salar.","2. Pasar por harina y luego por huevo batido.","3. Freír en abundante aceite caliente hasta dorar.","4. Servir con unas gotas de limón."] },
+  { n:"Tortilla de champiñones", t:15, ing:["4 Huevos","200g Champiñones","1 Cebolla pequeña","Aceite"], pasos:["1. Picar y saltear la cebolla y los champiñones.","2. Batir los huevos con sal y mezclar.","3. Cuajar en la sartén a fuego medio."] },
+  { n:"Ensalada César", t:20, ing:["1 Lechuga","2 Pechugas de pollo","Queso parmesano","Picatostes","Salsa César"], pasos:["1. Hacer el pollo a la plancha y cortarlo en tiras.","2. Lavar y trocear la lechuga.","3. Mezclar lechuga, pollo, picatostes y queso.","4. Aliñar con la salsa César."] },
+  { n:"Lubina al horno con verduras", t:30, ing:["1 Lubina entera","1 Patata","1 Cebolla","1 Pimiento","Aceite de oliva","Limón"], pasos:["1. Cortar las verduras en rodajas y poner en la bandeja.","2. Colocar la lubina encima y sazonar.","3. Echar aceite y limón. Hornear a 200°C 20 min."] },
+  { n:"Estofado de ternera con setas", t:90, ing:["600g Ternera","200g Setas","1 Cebolla","1 Zanahoria","Caldo","Vino tinto"], pasos:["1. Dorar la carne troceada.","2. Pochar cebolla y zanahoria.","3. Añadir setas, vino y caldo.","4. Cocer a fuego lento 1 hora y media."] },
+  { n:"Arroz a la cubana", t:25, ing:["300g Arroz","2 Huevos","1 Plátano","400g Tomate triturado","Ajo"], pasos:["1. Cocer el arroz blanco.","2. Hacer una salsa de tomate con ajo.","3. Freír los huevos y el plátano en rodajas.","4. Servir el arroz con la salsa, el huevo y el plátano."] },
+  { n:"Sopa de picadillo", t:15, ing:["1 Litro de caldo","50g Jamón","1 Huevo cocido","Picatostes"], pasos:["1. Calentar el caldo.","2. Picar el jamón y el huevo muy finos.","3. Añadir a la sopa y servir con picatostes."] },
+  { n:"Pimientos del piquillo rellenos de bacalao", t:40, ing:["1 Lata de pimientos del piquillo","300g Bacalao desmigado","1 Cebolla","2 cdas Harina","200ml Leche"], pasos:["1. Pochar cebolla y añadir el bacalao.","2. Hacer una bechamel con la leche y la harina, mezclar.","3. Rellenar los pimientos.","4. Cubrir con salsa de tomate y calentar."] },
+  { n:"Chuletillas de cordero a la plancha", t:15, ing:["8 Chuletillas de cordero","Ajo","Perejil","Aceite de oliva","Sal gorda"], pasos:["1. Calentar la plancha a fuego fuerte.","2. Echar las chuletillas y salarlas.","3. Dar la vuelta a los 2 minutos.","4. Servir con ajo y perejil picado."] },
+  { n:"Salmón a la plancha con verduras", t:20, ing:["2 Lomos de salmón","1 Calabacín","1 Pimiento","Aceite de oliva","Sal"], pasos:["1. Hacer el salmón a la plancha 3 min por cada lado.","2. Saltear las verduras en tiras.","3. Servir el salmón con las verduras."] },
+  { n:"Macarrones con atún", t:25, ing:["250g Macarrones","2 Latas de atún","400g Tomate triturado","1 Cebolla"], pasos:["1. Cocer la pasta.","2. Pochar cebolla y añadir tomate y atún.","3. Cocer 5 min y mezclar con la pasta."] },
+  { n:"Pollo a la mostaza", t:30, ing:["4 Muslos de pollo","2 cdas Mostaza","200ml Nata","1 Cebolla","Caldo"], pasos:["1. Dorar el pollo.","2. Pochar cebolla y añadir la mostaza.","3. Echar nata y un poco de caldo.","4. Cocer 15 min con el pollo."] },
+  { n:"Merluza con almejas", t:25, ing:["4 Lomos de merluza","200g Almejas","2 Ajos","Perejil","Vino blanco","Harina"], pasos:["1. Dorar ajos en una sartén.","2. Añadir harina y vino blanco.","3. Echar las almejas y la merluza.","4. Cocer 10 min hasta que se abran las almejas."] },
+  { n:"Ensalada de pasta", t:20, ing:["250g Pasta","1 Tomate","1 Lata de atún","Aceitunas","Maíz","Aceite y vinagre"], pasos:["1. Cocer la pasta y enfriar.","2. Picar el tomate.","3. Mezclar pasta, tomate, atún, aceitunas y maíz.","4. Aliñar al gusto."] },
+  { n:"Tortilla de jamón y queso", t:10, ing:["4 Huevos","100g Jamón cocido","100g Queso rallado"], pasos:["1. Batir los huevos.","2. Echar en la sartén, añadir jamón y queso.","3. Doblar la tortilla y servir."] },
+  { n:"Caldo de pescado", t:40, ing:["Espinas de pescado","1 Cebolla","1 Zanahoria","1 Puerro","Agua"], pasos:["1. Pochar las verduras.","2. Añadir las espinas y cubrir con agua.","3. Cocer 30 min.","4. Colar y guardar."] },
+  { n:"Arroz con bogavante", t:50, ing:["300g Arroz","1 Bogavante","1 Tomate","1 Pimiento","Caldo de pescado","Azafrán"], pasos:["1. Dorar el bogavante y reservar.","2. Hacer un sofrito de verduras.","3. Echar arroz y caldo.","4. Poner el bogavante encima y cocer 18 min."] },
+  { n:"Pollo al horno con limón y miel", t:45, ing:["4 Cuartos de pollo","2 Limones","2 cdas Miel","Salsa de soja","Ajo"], pasos:["1. Mezclar zumo de limón, miel, soja y ajo.","2. Pintar el pollo y dejar marinar.","3. Hornear a 200°C 40 min."] },
+  { n:"Sopa de lentejas", t:40, ing:["200g Lentejas","1 Patata","1 Zanahoria","1 Cebolla","Caldo"], pasos:["1. Pochar cebolla y zanahoria.","2. Añadir patata, lentejas y caldo.","3. Cocer 30 min hasta que estén tiernas."] },
+  { n:"Revuelto de setas y ajos tiernos", t:15, ing:["4 Huevos","200g Setas","1 manojo de Ajos tiernos","Aceite"], pasos:["1. Saltear los ajos tiernos y las setas.","2. Añadir los huevos batidos.","3. Remover hasta cuajar."] },
+  { n:"Pulpo a la gallega", t:60, ing:["1 Pulpo","4 Patatas","Pimentón","Sal gorda","Aceite de oliva"], pasos:["1. Cocer el pulpo (truco: asustarlo 3 veces).","2. Cocer las patatas en el mismo agua.","3. Cortar patatas y pulpo en rodajas.","4. Echar aceite, sal y pimentón."] },
+  { n:"Pollo en pepitoria", t:60, ing:["1 Pollo troceado","1 Cebolla","2 Ajos","1 Yema de huevo","Almendras","Vino blanco"], pasos:["1. Dorar el pollo.","2. Pochar cebolla y ajo.","3. Añadir vino y caldo, cocer 30 min.","4. Triturar yema, almendras y añadir al final."] },
+  { n:"Trucha a la navarra", t:20, ing:["2 Truchas","4 Lonchas de jamón serrano","Harina","Aceite"], pasos:["1. Limpiar truchas y meter jamón dentro.","2. Pasar por harina.","3. Freír en aceite caliente 4 min por lado."] }
+]);
+RECETAS = RECETAS.concat([
+  { n:"Ensalada de tomate y mozzarella", t:10, ing:["2 Tomates grandes","1 Bola de mozzarella","Albahaca","Aceite de oliva","Sal"], pasos:["1. Cortar tomate y mozzarella en rodajas.","2. Alternar en un plato.","3. Aliñar con albahaca, aceite y sal."] },
+  { n:"Huevos a la flamenca", t:25, ing:["4 Huevos","200g Guisantes","Tomate triturado","1 Cebolla","Jamón"], pasos:["1. Hacer una salsa con cebolla y tomate.","2. Añadir guisantes y jamón.","3. Escalfar los huevos en la salsa."] },
+  { n:"Lomo de salmón al horno", t:20, ing:["4 Lomos de salmón","1 Limón","Eneldo","Aceite de oliva"], pasos:["1. Poner el salmón en bandeja.","2. Echar limón, eneldo y aceite.","3. Hornear a 180°C 12 min."] },
+  { n:"Crema de zanahoria y jengibre", t:30, ing:["4 Zanahorias","1 Patata","1 Cebolla","Jengibre","Caldo"], pasos:["1. Pochar cebolla, zanahoria y jengibre.","2. Cubrir con caldo y cocer 20 min.","3. Triturar."] },
+  { n:"Pechugas de pollo rellenas", t:35, ing:["2 Pechugas","100g Queso","4 Lonchas de jamón","Pan rallado"], pasos:["1. Abrir pechugas y rellenar con queso y jamón.","2. Cerrar con palillos y empanar.","3. Hornear a 200°C 20 min."] },
+  { n:"Tarta de galletas y chocolate", t:20, ing:["1 Paquete de galletas","200g Chocolate","500ml Leche","Mantequilla"], pasos:["1. Derretir chocolate con leche.","2. Alternar capas de galletas mojadas en leche y chocolate.","3. Dejar en la nevera 4 horas."] },
+  { n:"Sopa de cebolla", t:40, ing:["3 Cebollas grandes","50g Mantequilla","Caldo de carne","Pan","Queso"], pasos:["1. Pochar la cebolla muy despacio (30 min).","2. Añadir caldo y cocer 10 min.","3. Servir con pan tostado y queso gratinado."] },
+  { n:"Arroz negro", t:45, ing:["300g Arroz","200g Calamares","Tinta de calamar","Pimiento","Cebolla","Caldo"], pasos:["1. Pochar cebolla y pimiento.","2. Añadir calamares.","3. Echar arroz, tinta y caldo. Cocer 18 min."] },
+  { n:"Pollo a la cerveza", t:45, ing:["1 Pollo troceado","1 Cerveza","1 Cebolla","2 Ajos","Laurel"], pasos:["1. Dorar el pollo.","2. Añadir cebolla y ajo.","3. Verter la cerveza y el laurel.","4. Cocer 30 min."] },
+  { n:"Berenjenas rellenas de carne", t:50, ing:["2 Berenjenas","300g Carne picada","Tomate triturado","Queso rallado"], pasos:["1. Asar berenjenas (micro 8 min).","2. Sacar la pulpa y mezclar con carne y tomate.","3. Rellenar y cubrir con queso.","4. Gratinar 10 min."] },
+  { n:"Tortitas americanas", t:20, ing:["200g Harina","2 Huevos","250ml Leche","1 cda Azúcar","1 cdta Levadura"], pasos:["1. Mezclar ingredientes (no batir en exceso).","2. Cocinar en sartén antiadherente.","3. Servir con miel o sirope."] },
+  { n:"Salmón marinado", t:10, ing:["500g Salmón","Sal","Azúcar","Eneldo"], pasos:["1. Cubrir salmón con mezcla de sal y azúcar.","2. Dejar en nevera 24h.","3. Lavar, secar y cortar en lonchas."] },
+  { n:"Pisto con huevo escalfado", t:30, ing:["1 Pimiento","1 Calabacín","2 Tomates","1 Cebolla","4 Huevos"], pasos:["1. Hacer el pisto.","2. Escalfar los huevos en el pisto.","3. Servir caliente."] },
+  { n:"Tarta de limón", t:45, ing:["1 Masa quebrada","3 Limones","4 Huevos","150g Azúcar","Nata"], pasos:["1. Forrar el molde.","2. Batir huevos, azúcar y limón.","3. Hornear 180°C 30 min."] },
+  { n:"Garbanzos con chorizo", t:20, ing:["400g Garbanzos cocidos","1 Chorizo","1 Cebolla","Caldo"], pasos:["1. Pochar cebolla y chorizo.","2. Añadir garbanzos y caldo.","3. Cocer 10 min."] },
+  { n:"Albóndigas de pescado", t:30, ing:["400g Pescado","1 Huevo","1 Cebolla","Pan rallado","Harina"], pasos:["1. Mezclar pescado picado, huevo, cebolla y pan rallado.","2. Formar bolitas y enharinar.","3. Freír y servir con salsa verde."] },
+  { n:"Pollo kung pao", t:25, ing:["500g Pollo","Cacahuetes","1 Pimiento","Salsa de soja","Guindilla"], pasos:["1. Saltear pollo en dados.","2. Añadir pimiento y guindilla.","3. Echar soja y cacahuetes. Saltear 3 min."] },
+  { n:"Bizcocho de chocolate", t:40, ing:["3 Huevos","150g Azúcar","200g Harina","50g Cacao","100ml Leche","Aceite"], pasos:["1. Batir huevos y azúcar.","2. Añadir leche, aceite, harina y cacao.","3. Hornear 180°C 30 min."] },
+  { n:"Pimientos verdes fritos", t:15, ing:["4 Pimientos verdes","Aceite de oliva","Sal gorda"], pasos:["1. Cortar pimientos en tiras.","2. Freír en abundante aceite.","3. Escurrir y salar."] },
+  { n:"Revuelto de ajos y perejil", t:10, ing:["4 Huevos","3 Ajos","Perejil"], pasos:["1. Dorar ajos laminados.","2. Echar huevos batidos.","3. Remover y añadir perejil."] },
+  { n:"Merluza a la vasca", t:30, ing:["4 Lomos","Almejas","Gambas","Ajo","Perejil","Vino blanco"], pasos:["1. Abrir almejas con vino.","2. Echar merluza y gambas.","3. Cocer 8 min y echar perejil."] },
+  { n:"Sopa de tomate", t:30, ing:["1 kg Tomates","1 Cebolla","Ajo","Caldo","Nata"], pasos:["1. Pochar cebolla y ajo.","2. Añadir tomate y caldo. Cocer 20 min.","3. Triturar y añadir nata."] },
+  { n:"Pollo al limón (Airfryer)", t:30, ing:["4 Muslos","1 Limón","Tomillo","Aceite"], pasos:["1. Pincelar pollo con aceite y limón.","2. Airfryer 190°C 25 min."] },
+  { n:"Calabacines rellenos de atún", t:30, ing:["2 Calabacines","2 Latas de atún","Tomate frito","Cebolla","Queso"], pasos:["1. Partir calabacines y vaciar.","2. Mezclar pulpa con atún, cebolla y tomate.","3. Rellenar, cubrir con queso y hornear 20 min."] },
+  { n:"Tarta de manzana (Airfryer)", t:35, ing:["2 Manzanas","1 Masa","Azúcar","Canela"], pasos:["1. Forrar molde.","2. Poner manzanas laminadas.","3. Airfryer 160°C 25 min."] }
+]);
+RECETAS = RECETAS.concat([
+  { n:"Patatas bravas (Airfryer)", t:30, ing:["3 Patatas","Tomate frito","Mayonesa","Pimentón"], pasos:["1. Patatas en dados a la Airfryer 180°C 20 min.","2. Mezclar tomate, mayonesa y pimentón.","3. Servir con salsa."] },
+  { n:"Pollo al ajillo (Thermomix)", t:30, ing:["1 Pollo troceado","6 Ajos","Vino blanco","Aceite"], pasos:["1. Dorar ajos 5 min/Varoma/vel 1.","2. Añadir pollo y vino. Cocer 20 min/Varoma/giro izq/vel cuchara."] },
+  { n:"Arroz caldoso (Thermomix)", t:30, ing:["200g Arroz","500ml Caldo","1 Cebolla","1 Zanahoria"], pasos:["1. Pochar verduras 5 min/Varoma/vel 1.","2. Añadir arroz y caldo. Cocer 15 min/100°C/giro izq/vel cuchara."] },
+  { n:"Sopa de pescado (Thermomix)", t:40, ing:["Espinas de pescado","Cebolla","Zanahoria","Agua"], pasos:["1. Pochar verduras.","2. Añadir espinas y agua. Cocer 30 min/Varoma/vel 1.","3. Colar."] },
+  { n:"Tortilla de patatas (Thermomix)", t:40, ing:["4 Huevos","3 Patatas","1 Cebolla","Aceite"], pasos:["1. Picar patata y cebolla 5 seg/vel 4.","2. Freír en sartén.","3. Mezclar con huevo y cuajar."] },
+  { n:"Pisto (Thermomix)", t:30, ing:["1 Calabacín","1 Pimiento","1 Cebolla","2 Tomates"], pasos:["1. Trocear verduras 5 seg/vel 5.","2. Sofreír 15 min/Varoma/vel 1."] },
+  { n:"Lubina al horno con patatas", t:35, ing:["1 Lubina entera","3 Patatas","1 Cebolla","Aceite","Limón"], pasos:["1. Cortar patatas y cebolla en rodajas finas.","2. Poner en bandeja con la lubina encima.","3. Hornear 200°C 20 min con limón."] },
+  { n:"Pechugas de pollo a la plancha", t:15, ing:["2 Pechugas","1 Limón","Orégano","Aceite"], pasos:["1. Filetear pechugas.","2. Hacer a la plancha.","3. Echar limón y orégano."] },
+  { n:"Ensalada de garbanzos y atún", t:10, ing:["400g Garbanzos","2 Latas de atún","Tomate","Cebolla","Aceite y vinagre"], pasos:["1. Mezclar todos los ingredientes.","2. Aliñar al gusto."] },
+  { n:"Paté de berenjena", t:40, ing:["2 Berenjenas","Ajo","Aceite","Limón"], pasos:["1. Asar berenjenas 200°C 30 min.","2. Sacar pulpa y triturar con ajo, aceite y limón."] },
+  { n:"Higos con jamón", t:10, ing:["4 Higos frescos","4 Lonchas de jamón serrano"], pasos:["1. Abrir los higos.","2. Envolver con el jamón.","3. Servir."] },
+  { n:"Tarta de queso sin horno", t:20, ing:["1 Queso crema","200ml Nata","3 cdas Azúcar","1 Masa de galletas"], pasos:["1. Triturar galletas y poner en molde.","2. Batir queso, nata y azúcar.","3. Verter y enfriar 4 horas."] },
+  { n:"Sopa de verduras", t:30, ing:["1 Puerro","1 Zanahoria","1 Patata","1 Cebolla","Caldo"], pasos:["1. Trocear verduras.","2. Cocer en caldo 20 min.","3. Triturar o dejar entera."] },
+  { n:"Pollo con arroz y verduras", t:35, ing:["1 Pollo troceado","200g Arroz","1 Pimiento","1 Zanahoria","Caldo"], pasos:["1. Dorar pollo.","2. Añadir arroz y verduras.","3. Echar caldo y cocer 18 min."] },
+  { n:"Tortilla de espinacas", t:15, ing:["4 Huevos","200g Espinacas","1 Cebolla"], pasos:["1. Saltear espinacas con cebolla.","2. Mezclar con huevos.","3. Cuajar."] },
+  { n:"Lasaña de verduras", t:50, ing:["12 Placas","1 Calabacín","1 Berenjena","Tomate triturado","Bechamel"], pasos:["1. Asar verduras.","2. Montar capas con tomate y bechamel.","3. Hornear 200°C 25 min."] },
+  { n:"Tarta de chocolate y galletas", t:15, ing:["Galletas","Chocolate","Mantequilla","Leche"], pasos:["1. Derretir chocolate.","2. Alternar capas.","3. Enfriar."] },
+  { n:"Pasta con verduras", t:20, ing:["250g Pasta","1 Calabacín","1 Pimiento","Tomate triturado"], pasos:["1. Cocer pasta.","2. Saltear verduras.","3. Mezclar con la pasta y tomate."] },
+  { n:"Pollo a la naranja (Airfryer)", t:30, ing:["4 Alitas","Zumo de naranja","Soja","Miel"], pasos:["1. Adobar alitas.","2. Airfryer 180°C 20 min.","3. Pintar con la salsa a mitad."] },
+  { n:"Arroz con leche (Airfryer)", t:40, ing:["150g Arroz","1 Litro leche","Azúcar","Canela"], pasos:["1. Mezclar en molde apto.","2. Airfryer 160°C 30 min removiendo."] },
+  { n:"Salmón al limón (Thermomix)", t:20, ing:["2 Lomos salmón","Limón","Caldo","Aceite"], pasos:["1. Poner agua en el vaso.","2. Salmón en Varoma con limón.","3. Cocer 15 min/Varoma/vel 1."] },
+  { n:"Flan de huevo (Airfryer)", t:40, ing:["4 Huevos","500ml Leche","Azúcar","Caramelo"], pasos:["1. Caramelo en molde.","2. Batir huevos y leche.","3. Airfryer 160°C 25 min al baño María."] },
+  { n:"Pollo a la cerveza (Thermomix)", t:40, ing:["1 Pollo","1 Cerveza","Cebolla","Ajo"], pasos:["1. Dorar pollo.","2. Añadir cerveza y verduras.","3. Cocer 30 min/100°C/giro izq/vel cuchara."] },
+  { n:"Merluza a la plancha", t:15, ing:["4 Lomos merluza","Ajo","Perejil","Aceite"], pasos:["1. Calentar plancha.","2. Hacer merluza 3 min por lado.","3. Echar ajo y perejil."] },
+  { n:"Ensalada de frutas", t:10, ing:["1 Manzana","1 Naranja","1 Plátano","1 Kiwi"], pasos:["1. Pelar y trocear frutas.","2. Mezclar en bol.","3. Añadir zumo naranja."] }
+]);
+RECETAS = RECETAS.concat([
+  { n:"Huevos revueltos con champiñones", t:10, ing:["4 Huevos","200g Champiñones","Ajo"], pasos:["1. Saltear champiñones.","2. Echar huevos.","3. Remover hasta cuajar."] },
+  { n:"Pasta a la carbonara (Thermomix)", t:20, ing:["250g Pasta","Bacon","Nata","Queso"], pasos:["1. Cocer pasta.","2. Dorar bacon.","3. Mezclar con nata y queso."] },
+  { n:"Tarta de queso y limón", t:40, ing:["Queso crema","Limón","Huevos","Azúcar"], pasos:["1. Batir todo.","2. Hornear 180°C 30 min."] },
+  { n:"Pollo al horno con verduras", t:45, ing:["1 Pollo","Patatas","Cebolla","Pimiento"], pasos:["1. Poner pollo y verduras en bandeja.","2. Hornear 200°C 40 min."] },
+  { n:"Sopa de marisco", t:30, ing:["Marisco","Tomate","Cebolla","Caldo"], pasos:["1. Pochar cebolla y tomate.","2. Añadir marisco y caldo.","3. Cocer 15 min."] },
+  { n:"Arroz con pollo (Thermomix)", t:30, ing:["200g Arroz","300g Pollo","Caldo","Pimiento"], pasos:["1. Dorar pollo.","2. Añadir arroz y caldo.","3. Cocer 15 min/100°C/vel 1."] },
+  { n:"Bizcocho de limón", t:45, ing:["3 Huevos","Azúcar","Harina","Limón","Levadura"], pasos:["1. Batir huevos y azúcar.","2. Añadir limón y harina.","3. Hornear 180°C 35 min."] },
+  { n:"Pimientos asados", t:30, ing:["3 Pimientos rojos","Aceite","Sal"], pasos:["1. Asar pimientos 200°C 25 min.","2. Pelar y cortar en tiras.","3. Aliñar."] },
+  { n:"Pollo a la plancha", t:15, ing:["2 Pechugas","Aceite","Sal"], pasos:["1. Filetear.","2. Hacer a la plancha.","3. Salar."] },
+  { n:"Tarta de manzana (Thermomix)", t:40, ing:["Manzanas","Masa","Azúcar","Canela"], pasos:["1. Triturar manzanas.","2. Mezclar con azúcar y canela.","3. Hornear 180°C 30 min."] },
+  { n:"Salmón a la plancha", t:15, ing:["2 Lomos","Aceite","Sal"], pasos:["1. Calentar plancha.","2. Hacer salmón 3 min por lado."] },
+  { n:"Ensalada César (Thermomix)", t:20, ing:["Lechuga","Pollo","Salsa César","Picatostes"], pasos:["1. Hacer pollo.","2. Mezclar todo."] },
+  { n:"Pasta con atún", t:15, ing:["250g Pasta","Atún","Tomate","Cebolla"], pasos:["1. Cocer pasta.","2. Hacer sofrito.","3. Mezclar."] },
+  { n:"Tarta de galletas (Thermomix)", t:20, ing:["Galletas","Chocolate","Leche"], pasos:["1. Triturar galletas.","2. Derretir chocolate.","3. Montar capas."] },
+  { n:"Pollo al curry (Airfryer)", t:30, ing:["Pollo","Curry","Leche coco"], pasos:["1. Adobar pollo.","2. Airfryer 180°C 20 min."] },
+  { n:"Arroz blanco (Thermomix)", t:20, ing:["200g Arroz","Agua","Ajo"], pasos:["1. Poner todo en el cestillo.","2. Cocer 15 min/Varoma/vel 4."] },
+  { n:"Merluza al horno (Airfryer)", t:20, ing:["4 Lomos","Patata","Limón"], pasos:["1. Poner todo en Airfryer.","2. Cocinar 180°C 15 min."] },
+  { n:"Natillas (Thermomix)", t:20, ing:["Leche","Huevos","Azúcar","Maicena"], pasos:["1. Mezclar todo en el vaso.","2. Cocinar 7 min/90°C/vel 4."] },
+  { n:"Bizcocho (Airfryer)", t:30, ing:["Huevos","Harina","Azúcar","Levadura"], pasos:["1. Mezclar.","2. Airfryer 160°C 25 min."] },
+  { n:"Pizza casera (Airfryer)", t:20, ing:["Masa","Tomate","Queso"], pasos:["1. Montar pizza.","2. Airfryer 180°C 10 min."] },
+  { n:"Patatas asadas (Airfryer)", t:25, ing:["Patatas","Aceite","Sal"], pasos:["1. Cortar.","2. Airfryer 180°C 20 min."] },
+  { n:"Crema de champiñones (Thermomix)", t:25, ing:["Champiñones","Cebolla","Caldo","Nata"], pasos:["1. Pochar cebolla y champiñones.","2. Añadir caldo y cocer 10 min.","3. Triturar y añadir nata."] },
+  { n:"Lentejas (Airfryer)", t:50, ing:["Lentejas","Chorizo","Patata","Caldo"], pasos:["1. Poner todo en molde.","2. Airfryer 180°C 25 min."] },
+  { n:"Lasaña (Thermomix)", t:50, ing:["Placas","Carne","Tomate","Bechamel"], pasos:["1. Hacer carne con tomate.","2. Montar capas.","3. Hornear 200°C 20 min."] },
+  { n:"Crema de calabaza (Thermomix)", t:30, ing:["Calabaza","Patata","Cebolla","Caldo"], pasos:["1. Trocear y sofreír.","2. Añadir caldo y cocer 15 min.","3. Triturar."] }
+]);
+let existencias = []; let siguienteId = 1; let seleccionActual = null;
+
+function cargar(){ try { const raw = localStorage.getItem('despensa_v1'); if (raw) { const d = JSON.parse(raw); existencias = d.existencias || []; siguienteId = d.siguienteId || 1; } } catch(e) { existencias = []; siguienteId = 1; } }
+function guardar(){ localStorage.setItem('despensa_v1', JSON.stringify({ existencias: existencias, siguienteId: siguienteId })); }
+function hoy(){ return new Date(); }
+function aFecha(s){ if (!s) return null; const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function diasHasta(fecha){ if (!fecha) return null; const f = aFecha(fecha); const h = hoy(); f.setHours(0,0,0,0); h.setHours(0,0,0,0); return Math.round((f - h) / (1000*60*60*24)); }
+function formatoFecha(s){ if (!s) return '—'; const f = aFecha(s); return f.toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
+function buscarAlimento(nombre){ return ALIMENTOS.find(a => a.n.toLowerCase() === nombre.toLowerCase()); }
+
+function renderTodo(){ ['nevera','congelador','despensa'].forEach(renderPanel); renderRecetas(); renderTrucos(); renderAvisos(); }
+
+function renderPanel(ubi){
+  const panel = document.getElementById('panel-' + ubi); if (!panel) return;
+  const items = existencias.filter(e => e.ubicacion === ubi && !e.gastado);
+  if (items.length === 0){ panel.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">No hay nada en ' + ubi + '.</div>'; return; }
+  items.sort((a,b) => { const da = diasHasta(a.caduca); const db = diasHasta(b.caduca); if (da === null) return 1; if (db === null) return -1; return da - db; });
+  let html = '';
+  items.forEach(e => {
+    const dias = diasHasta(e.caduca);
+    let btnMover = ubi === 'congelador' ? '<button class="btn-mover" onclick="moverProducto(' + e.id + ', \'nevera\')">🔥</button>' : '<button class="btn-mover" onclick="moverProducto(' + e.id + ', \'congelador\')">❄️</button>';
+    let fechaTxt = e.caduca ? '📅 ' + formatoFecha(e.caduca) : '';
+    if (dias !== null) fechaTxt += ' · ' + (dias < 0 ? '❌ caducado' : (dias === 0 ? '⚠️ hoy' : '⏳ ' + dias + ' días'));
+    html += '<div class="item"><div><div class="nombre">' + (e.abierto ? '🔓 ' : '📦 ') + e.nombre + '</div><div class="detalle">' + fechaTxt + '</div></div><div class="acciones">' + btnMover + (e.abierto ? '' : '<button class="btn-abrir" onclick="abrirProducto(' + e.id + ')">Abrir</button>') + '<button class="btn-gastar" onclick="gastarProducto(' + e.id + ')">Gastar</button></div></div>';
+  });
+  panel.innerHTML = html;
+}
+
+function renderAvisos(){
+  const cont = document.getElementById('avisos-globales'); if (!cont) return;
+  const proximos = existencias.filter(e => !e.gastado && e.caduca).map(e => ({ e, dias: diasHasta(e.caduca) })).filter(x => x.dias !== null && x.dias <= 3).sort((a,b) => a.dias - b.dias);
+  if (proximos.length === 0){ cont.innerHTML = ''; return; }
+  let html = '';
+  proximos.forEach(x => {
+    const clase = x.dias < 0 ? 'rojo' : 'ambar';
+    const txt = x.dias < 0 ? 'Caducado' : (x.dias === 0 ? 'Caduca hoy' : 'Caduca en ' + x.dias + ' días');
+    const alim = ALIMENTOS.find(a => a.n.toLowerCase() === x.e.nombre.toLowerCase());
+    const esCongelable = alim ? (alim.c !== false) : true; 
+    let sug = (x.dias >= 0 && x.e.ubicacion !== 'congelador') ? (esCongelable ? ' (Puedes congelarlo ❄️)' : ' (¡Gástalo pronto! No congela bien)') : '';
+    html += '<div class="aviso ' + clase + '"><b>' + (x.dias < 0 ? '❌ ' : '⚠️ ') + txt + ':</b> ' + x.e.nombre + sug + '</div>';
+  });
+  cont.innerHTML = html;
+}
+function abrirProducto(id){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  const alim = buscarAlimento(e.nombre); const dias = alim && alim.a ? alim.a : 3;
+  const nueva = new Date(hoy().getTime() + dias * 24*60*60*1000); const impresa = aFecha(e.caduca);
+  let final = nueva; if (impresa && impresa < nueva) final = impresa;
+  e.abierto = true; e.caduca = final.toISOString().slice(0,10); guardar(); renderTodo();
+}
+
+function gastarProducto(id){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  if (!confirm('¿Gastar ' + e.nombre + '?')) return;
+  e.gastado = true; guardar(); renderTodo();
+}
+
+function moverProducto(id, destino){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  e.ubicacion = destino;
+  if(destino === 'congelador'){
+    const nueva = new Date(hoy().getTime() + 90 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10); e.abierto = false; 
+  } else if (destino === 'nevera'){
+    const nueva = new Date(hoy().getTime() + 2 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10);
+  }
+  guardar(); renderTodo();
+}
+
+function abrirModal(){
+  seleccionActual = null; document.getElementById('in-nombre').value = ''; document.getElementById('in-caduca').value = ''; document.getElementById('in-ubi').value = 'nevera';
+  document.getElementById('sugerencias').style.display = 'none'; document.getElementById('ocr-estado').style.display = 'none';
+  document.getElementById('modal').classList.add('abierto');
+}
+function cerrarModal(){ document.getElementById('modal').classList.remove('abierto'); }
+
+function alEscribirNombre(){
+  const v = document.getElementById('in-nombre').value.trim().toLowerCase(); const cont = document.getElementById('sugerencias');
+  if (v.length < 2){ cont.style.display = 'none'; return; }
+  const matches = ALIMENTOS.filter(a => a.n.toLowerCase().includes(v)).slice(0, 8);
+  if (matches.length === 0){ cont.innerHTML = '<div style="padding:10px; cursor:pointer;" onclick="elegirLibre()">Usar «' + document.getElementById('in-nombre').value + '» (nuevo)</div>'; cont.style.display = 'block'; return; }
+  cont.innerHTML = matches.map(a => '<div style="padding:10px; cursor:pointer; border-bottom:1px solid #eee;" onclick="elegirAlimento(\'' + a.n.replace(/'/g, "\\'") + '\')">' + a.n + '</div>').join(''); cont.style.display = 'block';
+}
+
+function elegirAlimento(nombre){
+  document.getElementById('in-nombre').value = nombre; document.getElementById('sugerencias').style.display = 'none';
+  seleccionActual = buscarAlimento(nombre);
+  if (seleccionActual){
+    document.getElementById('in-ubi').value = seleccionActual.u;
+    if (seleccionActual.dias && seleccionActual.dias > 0) {
+      const f = new Date(hoy().getTime() + seleccionActual.dias * 24*60*60*1000);
+      document.getElementById('in-caduca').value = f.toISOString().slice(0,10);
+    }
+  }
+}
+function elegirLibre(){ seleccionActual = null; document.getElementById('sugerencias').style.display = 'none'; }
+
+function guardarProducto(){
+  const nombre = document.getElementById('in-nombre').value.trim(); const caduca = document.getElementById('in-caduca').value;
+  const ubi = document.getElementById('in-ubi').value;
+  if (!nombre){ alert('Escribe un nombre'); return; }
+  existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false });
+  guardar(); cerrarModal(); renderTodo();
+}
+function renderRecetas(){
+  const panel = document.getElementById('panel-recetas'); if (!panel) return;
+  const abiertos = existencias.filter(e => !e.gastado).map(e => e.nombre.toLowerCase());
+  const proximos = existencias.filter(e => !e.gastado).filter(e => { const d = diasHasta(e.caduca); return d !== null && d <= 5; }).map(e => e.nombre.toLowerCase());
+  const todas = RECETAS.map(r => {
+    const usa = r.ing.filter(i => abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)));
+    const deCaducan = r.ing.filter(i => proximos.some(p => p.includes(i.toLowerCase()) || i.toLowerCase().includes(p)));
+    return { r: r, usa: usa.length, deCaducan: deCaducan.length };
+  }).sort((a,b) => b.deCaducan - a.deCaducan || b.usa - a.usa || a.r.n.localeCompare(b.r.n));
+
+  let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Recetario</h2>';
+  html += '<input type="text" id="buscador-receta" class="buscador" placeholder="🔍 Buscar receta..." onkeyup="filtrarRecetas(this.value)">';
+  html += '<div id="lista-recetas">';
+  todas.forEach(x => {
+    let badge = x.deCaducan > 0 ? '<b style="color:#c62828; font-size:12px;">(¡Gastar pronto!)</b>' : (x.usa >= 2 ? '<b style="color:#2e7d32; font-size:12px;">(Puedes hacerlo)</b>' : '');
+    html += '<div class="receta" data-nombre="' + x.r.n.toLowerCase() + '"><h3>' + x.r.n + ' ' + badge + '</h3><div class="meta">⏱ ' + x.r.t + ' min · tienes ' + x.usa + ' de ' + x.r.ing.length + ' ing.</div><div class="ing">' + x.r.ing.map(i => { const tiene = abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)); return '<span class="' + (tiene ? 'tiene' : 'falta') + '">' + (tiene ? '✓ ' : '· ') + i + '</span>'; }).join(' · ') + '</div><ol class="pasos">' + x.r.pasos.map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
+  });
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+function renderTrucos(){
+  const panel = document.getElementById('panel-trucos'); if (!panel) return;
+  let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Trucos de Cocina</h2>';
+  html += '<input type="text" id="buscador-trucos" class="buscador" placeholder="🔍 Buscar truco..." onkeyup="filtrarTrucos(this.value)">';
+  html += '<div id="lista-trucos">';
+  TRUCOS.forEach(t => {
+    html += '<div class="receta" data-nombre="' + (t.t + " " + t.c).toLowerCase() + '"><h3 style="font-size:16px;">' + t.t + '</h3><div class="meta">' + t.c + '</div><div class="pasos" style="padding-left:0; margin-top:4px;">' + t.d + '</div></div>';
+  });
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+function filtrarRecetas(texto) { const filtro = texto.toLowerCase(); document.querySelectorAll('#lista-recetas .receta').forEach(r => { r.style.display = r.getAttribute('data-nombre').includes(filtro) ? 'block' : 'none'; }); }
+function filtrarTrucos(texto) { const filtro = texto.toLowerCase(); document.querySelectorAll('#lista-trucos .receta').forEach(r => { r.style.display = r.getAttribute('data-nombre').includes(filtro) ? 'block' : 'none'; }); }
+
+function extraerFechaInteligente(texto) {
+  let t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const meses = {"ene":"01","feb":"02","mar":"03","abr":"04","may":"05","jun":"06","jul":"07","ago":"08","sep":"09","oct":"10","nov":"11","dic":"12"};
+  for (let m in meses) { t = t.replace(new RegExp(m + "[a-z]*", "g"), meses[m]); }
+  let d=null, m=null, a=null;
+  let match = t.match(/(20\d{2})[\/\-\.\s](\d{1,2})[\/\-\.\s](\d{1,2})/);
+  if (match) { a = match[1]; m = match[2].padStart(2,'0'); d = match[3].padStart(2,'0'); }
+  if (!a) {
+    match = t.match(/(\d{1,2})[\/\-\.\s](\d{1,2})[\/\-\.\s](20\d{2}|\d{2})/);
+    if (match) { d = match[1].padStart(2,'0'); m = match[2].padStart(2,'0'); a = match[3]; }
+  }
+  if (a && a.length === 2) a = "20" + a;
+  if (d && m && a && parseInt(d) <= 31 && parseInt(m) <= 12) return a + "-" + m + "-" + d;
+  return null;
+}
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('fecha-hoy').textContent = hoy().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  
+  document.querySelectorAll('.tab').forEach(t => { 
+    t.addEventListener('click', () => { 
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa')); 
+      document.querySelectorAll('.panel').forEach(x => x.classList.remove('activa')); 
+      t.classList.add('activa'); 
+      document.getElementById('panel-' + t.dataset.tab).classList.add('activa'); 
+    }); 
+  });
+  
+  document.getElementById('fab-add').addEventListener('click', abrirModal); 
+  document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
+  document.getElementById('btn-guardar').addEventListener('click', guardarProducto); 
+  document.getElementById('in-nombre').addEventListener('input', alEscribirNombre);
+
+  function configurarMicro(btnId, targetInputId, esFecha) {
+    document.getElementById(btnId).addEventListener('click', function(){
+      if (!('webkitSpeechRecognition' in window)) { alert('Tu móvil no soporta dictado por voz.'); return; }
+      const rec = new webkitSpeechRecognition(); rec.lang = 'es-ES'; rec.interimResults = false; rec.maxAlternatives = 1;
+      rec.onstart = () => { this.textContent = '🔴'; this.style.background = '#ffcccc'; };
+      rec.onresult = (e) => { 
+        let txt = e.results[0][0].transcript;
+        if (esFecha) {
+          let f = extraerFechaInteligente(txt);
+          if(f) document.getElementById(targetInputId).value = f;
+          else alert("No entendí la fecha. Prueba a decir: 'doce de noviembre de 2024'.");
+        } else { document.getElementById(targetInputId).value = txt; alEscribirNombre(); }
+      };
+      rec.onend = () => { this.textContent = '🎤'; this.style.background = '#f0f0f0'; };
+      rec.start();
+    });
+  }
+  configurarMicro('btn-micro-nombre', 'in-nombre', false); configurarMicro('btn-micro-fecha', 'in-caduca', true);
+
+  function configurarCamara(btnId, inputFileId, esFecha) {
+    document.getElementById(btnId).addEventListener('click', () => { document.getElementById(inputFileId).click(); });
+    document.getElementById(inputFileId).addEventListener('change', function(e){
+      if (!e.target.files.length) return;
+      const file = e.target.files[0]; const estado = document.getElementById('ocr-estado');
+      estado.style.display = 'block'; estado.textContent = '⏳ Analizando imagen...'; estado.style.color = '#3e5c42';
+      Tesseract.recognize(file, 'spa').then(({ data: { text } }) => {
+        const fechaEncontrada = extraerFechaInteligente(text);
+        if (esFecha) {
+          if (fechaEncontrada) { document.getElementById('in-caduca').value = fechaEncontrada; estado.textContent = '✅ Fecha detectada: ' + fechaEncontrada.split('-').reverse().join('/'); estado.style.color = '#2e7d32'; } 
+          else { estado.textContent = '⚠️ No se ve bien la fecha.'; estado.style.color = '#c62828'; }
+        } else {
+          let lineas = text.split('\n').filter(l => l.trim().length > 2);
+          if (lineas.length > 0) {
+            let nombreDetectado = lineas[0].trim(); document.getElementById('in-nombre').value = nombreDetectado; alEscribirNombre(); 
+            estado.textContent = '✅ Texto leído: ' + nombreDetectado; estado.style.color = '#2e7d32';
+            if (fechaEncontrada) document.getElementById('in-caduca').value = fechaEncontrada;
+          } else { estado.textContent = '⚠️ No se ha leído texto claro.'; estado.style.color = '#c62828'; }
+        }
+      }).catch(err => { estado.textContent = '❌ Error al procesar la imagen.'; estado.style.color = '#c62828'; });
+    });
+  }
+  configurarCamara('btn-camara-nombre', 'in-foto-nombre', false); configurarCamara('btn-camara-fecha', 'in-foto-fecha', true);
+
+  document.getElementById('btn-backup').addEventListener('click', function(){
+    const data = localStorage.getItem('despensa_v1');
+    if(!data || data === '{"existencias":[],"siguienteId":1}') { alert("La despensa está vacía."); return; }
+    prompt("Copia este texto y guárdalo:", data);
+  });
+  document.getElementById('btn-restore').addEventListener('click', function(){
+    const data = prompt("Pega aquí la copia de seguridad:");
+    if(data){ try { JSON.parse(data); localStorage.setItem('despensa_v1', data); alert("¡Copia cargada!"); location.reload(); } catch(e) { alert("El texto no es válido."); } }
+  });
+  
+  cargar(); 
+  renderTodo();
+});
 </script>
 </body>
 </html>
