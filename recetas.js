@@ -189,3 +189,30 @@ RECETAS = RECETAS.concat([
   { n:"Merluza a la plancha", t:15, ing:["4 Lomos merluza","Ajo","Perejil","Aceite"], pasos:["1. Calentar plancha.","2. Hacer merluza 3 min por lado.","3. Echar ajo y perejil."] },
   { n:"Ensalada de frutas", t:10, ing:["1 Manzana","1 Naranja","1 Plátano","1 Kiwi"], pasos:["1. Pelar y trocear frutas.","2. Mezclar en bol.","3. Añadir zumo naranja."] }
 ]);
+RECETAS = RECETAS.concat([
+  { n:"Huevos revueltos con champiñones", t:10, ing:["4 Huevos","200g Champiñones","Ajo"], pasos:["1. Saltear champiñones.","2. Echar huevos.","3. Remover hasta cuajar."] },
+  { n:"Pasta a la carbonara (Thermomix)", t:20, ing:["250g Pasta","Bacon","Nata","Queso"], pasos:["1. Cocer pasta.","2. Dorar bacon.","3. Mezclar con nata y queso."] },
+  { n:"Tarta de queso y limón", t:40, ing:["Queso crema","Limón","Huevos","Azúcar"], pasos:["1. Batir todo.","2. Hornear 180°C 30 min."] },
+  { n:"Pollo al horno con verduras", t:45, ing:["1 Pollo","Patatas","Cebolla","Pimiento"], pasos:["1. Poner pollo y verduras en bandeja.","2. Hornear 200°C 40 min."] },
+  { n:"Sopa de marisco", t:30, ing:["Marisco","Tomate","Cebolla","Caldo"], pasos:["1. Pochar cebolla y tomate.","2. Añadir marisco y caldo.","3. Cocer 15 min."] },
+  { n:"Arroz con pollo (Thermomix)", t:30, ing:["200g Arroz","300g Pollo","Caldo","Pimiento"], pasos:["1. Dorar pollo.","2. Añadir arroz y caldo.","3. Cocer 15 min/100°C/vel 1."] },
+  { n:"Bizcocho de limón", t:45, ing:["3 Huevos","Azúcar","Harina","Limón","Levadura"], pasos:["1. Batir huevos y azúcar.","2. Añadir limón y harina.","3. Hornear 180°C 35 min."] },
+  { n:"Pimientos asados", t:30, ing:["3 Pimientos rojos","Aceite","Sal"], pasos:["1. Asar pimientos 200°C 25 min.","2. Pelar y cortar en tiras.","3. Aliñar."] },
+  { n:"Pollo a la plancha", t:15, ing:["2 Pechugas","Aceite","Sal"], pasos:["1. Filetear.","2. Hacer a la plancha.","3. Salar."] },
+  { n:"Tarta de manzana (Thermomix)", t:40, ing:["Manzanas","Masa","Azúcar","Canela"], pasos:["1. Triturar manzanas.","2. Mezclar con azúcar y canela.","3. Hornear 180°C 30 min."] },
+  { n:"Salmón a la plancha", t:15, ing:["2 Lomos","Aceite","Sal"], pasos:["1. Calentar plancha.","2. Hacer salmón 3 min por lado."] },
+  { n:"Ensalada César (Thermomix)", t:20, ing:["Lechuga","Pollo","Salsa César","Picatostes"], pasos:["1. Hacer pollo.","2. Mezclar todo."] },
+  { n:"Pasta con atún", t:15, ing:["250g Pasta","Atún","Tomate","Cebolla"], pasos:["1. Cocer pasta.","2. Hacer sofrito.","3. Mezclar."] },
+  { n:"Tarta de galletas (Thermomix)", t:20, ing:["Galletas","Chocolate","Leche"], pasos:["1. Triturar galletas.","2. Derretir chocolate.","3. Montar capas."] },
+  { n:"Pollo al curry (Airfryer)", t:30, ing:["Pollo","Curry","Leche coco"], pasos:["1. Adobar pollo.","2. Airfryer 180°C 20 min."] },
+  { n:"Arroz blanco (Thermomix)", t:20, ing:["200g Arroz","Agua","Ajo"], pasos:["1. Poner todo en el cestillo.","2. Cocer 15 min/Varoma/vel 4."] },
+  { n:"Merluza al horno (Airfryer)", t:20, ing:["4 Lomos","Patata","Limón"], pasos:["1. Poner todo en Airfryer.","2. Cocinar 180°C 15 min."] },
+  { n:"Natillas (Thermomix)", t:20, ing:["Leche","Huevos","Azúcar","Maicena"], pasos:["1. Mezclar todo en el vaso.","2. Cocinar 7 min/90°C/vel 4."] },
+  { n:"Bizcocho (Airfryer)", t:30, ing:["Huevos","Harina","Azúcar","Levadura"], pasos:["1. Mezclar.","2. Airfryer 160°C 25 min."] },
+  { n:"Pizza casera (Airfryer)", t:20, ing:["Masa","Tomate","Queso"], pasos:["1. Montar pizza.","2. Airfryer 180°C 10 min."] },
+  { n:"Patatas asadas (Airfryer)", t:25, ing:["Patatas","Aceite","Sal"], pasos:["1. Cortar.","2. Airfryer 180°C 20 min."] },
+  { n:"Crema de champiñones (Thermomix)", t:25, ing:["Champiñones","Cebolla","Caldo","Nata"], pasos:["1. Pochar cebolla y champiñones.","2. Añadir caldo y cocer 10 min.","3. Triturar y añadir nata."] },
+  { n:"Lentejas (Airfryer)", t:50, ing:["Lentejas","Chorizo","Patata","Caldo"], pasos:["1. Poner todo en molde.","2. Airfryer 180°C 25 min."] },
+  { n:"Lasaña (Thermomix)", t:50, ing:["Placas","Carne","Tomate","Bechamel"], pasos:["1. Hacer carne con tomate.","2. Montar capas.","3. Hornear 200°C 20 min."] },
+  { n:"Crema de calabaza (Thermomix)", t:30, ing:["Calabaza","Patata","Cebolla","Caldo"], pasos:["1. Trocear y sofreír.","2. Añadir caldo y cocer 15 min.","3. Triturar."] }
+]);
