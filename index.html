@@ -4,66 +4,82 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mi despensa</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
   * { box-sizing: border-box; }
-  body { margin:0; font-family:Arial,sans-serif; background:#f5f2ea; color:#222; padding-bottom:80px; }
-  header { background:#2e5c3e; color:#fff; padding:14px 16px; position:sticky; top:0; z-index:10; }
-  header h1 { margin:0; font-size:22px; }
-  header small { opacity:0.85; }
-  .tabs { display:flex; background:#2e5c3e; position:sticky; top:62px; z-index:9; }
-  .tab { flex:1; padding:12px; text-align:center; color:#cfe3d6; font-size:15px; cursor:pointer; border-bottom:3px solid transparent; }
-  .tab.activa { color:#fff; border-bottom-color:#ffd479; font-weight:bold; }
-  .panel { padding:14px; display:none; }
-  .panel.activa { display:block; }
-  .aviso { padding:10px 12px; border-radius:8px; margin-bottom:8px; font-size:15px; }
-  .aviso.rojo { background:#fdecea; border-left:4px solid #c62828; }
-  .aviso.ambar { background:#fff4e0; border-left:4px solid #e08a00; }
-  .item { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid #eee; font-size:15px; background:#fff; margin-bottom:6px; border-radius:8px; }
+  body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f4f1ea; color:#333; padding-bottom:80px; }
+  header { background:#3e5c42; color:#fff; padding:16px; position:sticky; top:0; z-index:10; box-shadow:0 2px 10px rgba(0,0,0,0.15); }
+  header h1 { margin:0; font-size:24px; display:flex; align-items:center; gap:8px; }
+  header small { opacity:0.8; font-size:13px; display:block; margin-top:4px; }
+  .tabs { display:flex; background:#3e5c42; position:sticky; top:90px; z-index:9; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+  .tab { flex:1; padding:12px 4px; text-align:center; color:#c8d6ca; font-size:12px; font-weight:bold; cursor:pointer; border-bottom:4px solid transparent; transition:all 0.2s; display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .tab .icono { font-size:20px; }
+  .tab.activa { color:#fff; border-bottom-color:#f2c94c; background:rgba(255,255,255,0.05); }
+  .panel { padding:16px; display:none; }
+  .panel.activa { display:block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(5px); } to { opacity:1; transform: translateY(0); } }
+  .aviso { padding:12px 14px; border-radius:12px; margin-bottom:10px; font-size:15px; display:flex; flex-direction:column; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+  .aviso.rojo { background:#ffebee; border-left:5px solid #d32f2f; color:#b71c1c; }
+  .aviso.ambar { background:#fff8e1; border-left:5px solid #f57c00; color:#e65100; }
+  .item { display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid #e0e0e0; font-size:15px; background:#fff; margin-bottom:8px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.04); }
   .item .info { flex:1; }
-  .item .nombre { font-weight:bold; }
-  .item .detalle { font-size:13px; color:#666; }
-  .item .acciones { display:flex; gap:6px; }
-  button { font-family:inherit; border:none; border-radius:8px; padding:8px 12px; font-size:14px; cursor:pointer; }
-  .btn-primario { background:#2e5c3e; color:#fff; font-weight:bold; }
-  .btn-secundario { background:#ddd; color:#333; }
-  .btn-gastar { background:#e08a00; color:#fff; }
-  .btn-abrir { background:#2e7d32; color:#fff; }
-  .fab { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#2e5c3e; color:#fff; font-size:32px; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; }
-  .modal { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:flex-end; z-index:30; }
-  .modal.abierto { display:flex; }
-  .modal-caja { background:#fff; width:100%; border-radius:16px 16px 0 0; padding:16px; max-height:85vh; overflow-y:auto; }
-  .modal h3 { margin:0 0 12px; }
-  .campo { margin-bottom:12px; }
-  .campo label { display:block; font-size:14px; color:#444; margin-bottom:4px; }
-  .campo input, .campo select { width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:8px; font-family:inherit; }
-  .sugerencias { background:#fff; border:1px solid #ccc; border-top:none; max-height:200px; overflow-y:auto; border-radius:0 0 8px 8px; position:absolute; width:calc(100% - 32px); z-index:10; }
-  .sugerencias div { padding:10px 12px; cursor:pointer; font-size:15px; border-bottom:1px solid #eee; }
-  .sugerencias div:hover { background:#f0f0e8; }
-  .vacio { text-align:center; color:#999; padding:30px 10px; font-size:15px; }
-  .receta { background:#fff; border-radius:12px; padding:14px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
-  .receta h3 { margin:0 0 6px; font-size:16px; color:#2e5c3e; }
-  .receta .meta { font-size:13px; color:#666; margin-bottom:8px; }
-  .receta .ing { font-size:14px; margin:4px 0; }
-  .receta .ing .tiene { color:#2e7d32; }
+  .item .nombre { font-weight:bold; font-size:16px; color:#2c3e2e; display:flex; align-items:center; gap:6px; }
+  .item .detalle { font-size:13px; color:#666; margin-top:4px; }
+  .item .acciones { display:flex; gap:8px; }
+  button { font-family:inherit; border:none; border-radius:8px; padding:10px 14px; font-size:14px; font-weight:bold; cursor:pointer; transition:transform 0.1s, opacity 0.2s; }
+  button:active { transform:scale(0.95); }
+  .btn-primario { background:#3e5c42; color:#fff; }
+  .btn-secundario { background:#e0e0e0; color:#333; }
+  .btn-gastar { background:#ff9800; color:#fff; box-shadow:0 2px 4px rgba(255,152,0,0.3); }
+  .btn-abrir { background:#4caf50; color:#fff; box-shadow:0 2px 4px rgba(76,175,80,0.3); }
+  .fab { position:fixed; bottom:24px; right:24px; width:65px; height:65px; border-radius:50%; background:#f2c94c; color:#3e5c42; font-size:36px; font-weight:bold; box-shadow:0 4px 12px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; transition:transform 0.2s; }
+  .fab:hover { transform:scale(1.05) rotate(90deg); }
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:flex-end; z-index:30; backdrop-filter: blur(2px); }
+  .modal.abierto { display:flex; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-caja { background:#fff; width:100%; border-radius:24px 24px 0 0; padding:20px; max-height:90vh; overflow-y:auto; }
+  .modal h3 { margin:0 0 16px; font-size:20px; color:#2c3e2e; text-align:center; }
+  .campo { margin-bottom:16px; }
+  .campo label { display:block; font-size:14px; font-weight:bold; color:#555; margin-bottom:6px; }
+  .campo input, .campo select { width:100%; padding:14px; font-size:16px; border:2px solid #e0e0e0; border-radius:10px; font-family:inherit; transition:border 0.2s; background:#fafafa; }
+  .campo input:focus, .campo select:focus { border-color:#3e5c42; outline:none; background:#fff; }
+  .fila-entrada { display:flex; gap:8px; }
+  .fila-entrada input { flex:1; }
+  .btn-icono { background:#f0f0f0; font-size:20px; padding:12px 16px; border:2px solid #e0e0e0; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .sugerencias { background:#fff; border:2px solid #e0e0e0; border-top:none; max-height:200px; overflow-y:auto; border-radius:0 0 10px 10px; position:absolute; width:calc(100% - 40px); z-index:10; box-shadow:0 4px 6px rgba(0,0,0,0.1); }
+  .sugerencias div { padding:12px 16px; cursor:pointer; font-size:15px; border-bottom:1px solid #eee; }
+  .sugerencias div:hover { background:#f4f1ea; }
+  .buscador { width:100%; padding:14px; margin-bottom:16px; border-radius:12px; border:2px solid #e0e0e0; font-size:16px; background:#fff; box-shadow:0 2px 5px rgba(0,0,0,0.05); }
+  .buscador:focus { border-color:#3e5c42; outline:none; }
+  .receta { background:#fff; border-radius:16px; padding:18px; margin-bottom:16px; box-shadow:0 3px 8px rgba(0,0,0,0.06); border-top:4px solid #3e5c42; }
+  .receta h3 { margin:0 0 8px; font-size:18px; color:#2c3e2e; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+  .receta .meta { font-size:14px; color:#666; margin-bottom:12px; font-weight:bold; background:#f4f1ea; padding:6px 10px; border-radius:8px; display:inline-block; }
+  .receta .ing { font-size:15px; margin:8px 0; line-height:1.6; }
+  .receta .ing .tiene { color:#2e7d32; font-weight:bold; }
   .receta .ing .falta { color:#c67a00; }
-  .receta .pasos { font-size:14px; line-height:1.5; margin-top:8px; }
-  .receta .pasos li { margin-bottom:4px; }
+  .receta .pasos { font-size:15px; line-height:1.6; margin-top:12px; padding-left:20px; color:#444; }
+  .receta .pasos li { margin-bottom:8px; }
+  .vacio { text-align:center; color:#888; padding:40px 20px; font-size:16px; font-style:italic; }
 </style>
 </head>
-  <body>
+<body>
 
 <header>
-  <h1>Mi despensa</h1>
+  <h1>👨‍🍳 Mi Despensa</h1>
   <small id="fecha-hoy"></small>
+  <div style="margin-top:10px; display:flex; gap:8px;">
+    <button id="btn-backup" style="flex:1; background:#f2c94c; color:#3e5c42; font-size:12px; padding:8px;">💾 Guardar copia</button>
+    <button id="btn-restore" style="flex:1; background:#8fa894; color:#fff; font-size:12px; padding:8px;">📥 Restaurar</button>
+  </div>
 </header>
 
 <div id="avisos-globales" style="padding: 14px 14px 0 14px;"></div>
 
 <div class="tabs">
-  <div class="tab activa" data-tab="nevera">Nevera</div>
-  <div class="tab" data-tab="congelador">Congelador</div>
-  <div class="tab" data-tab="despensa">Despensa</div>
-  <div class="tab" data-tab="recetas">Recetas</div>
+  <div class="tab activa" data-tab="nevera"><span class="icono">🧊</span>Nevera</div>
+  <div class="tab" data-tab="congelador"><span class="icono">❄️</span>Congelador</div>
+  <div class="tab" data-tab="despensa"><span class="icono">🥫</span>Despensa</div>
+  <div class="tab" data-tab="recetas"><span class="icono">🍳</span>Recetas</div>
 </div>
 
 <div class="panel activa" id="panel-nevera"></div>
@@ -78,11 +94,17 @@
     <h3>Añadir producto</h3>
     <div class="campo" style="position:relative;">
       <label>Producto</label>
-      <input id="in-nombre" placeholder="Escribe para buscar…" autocomplete="off">
+      <div class="fila-entrada">
+        <input id="in-nombre" placeholder="Escribe, usa el micro o la cámara..." autocomplete="off">
+        <button class="btn-icono" id="btn-micro" title="Dictar por voz">🎤</button>
+        <button class="btn-icono" id="btn-camara" title="Foto a la fecha">📷</button>
+      </div>
+      <input type="file" id="in-foto" accept="image/*" capture="environment" style="display:none">
       <div class="sugerencias" id="sugerencias" style="display:none"></div>
+      <div id="ocr-estado" style="font-size:12px; color:#3e5c42; margin-top:6px; display:none; font-weight:bold;"></div>
     </div>
     <div class="campo">
-      <label>Caduca el</label>
+      <label>Caduca el (opcional)</label>
       <input id="in-caduca" type="date">
     </div>
     <div class="campo">
@@ -93,57 +115,70 @@
         <option value="despensa">Despensa</option>
       </select>
     </div>
-    <div class="campo" id="campo-dias-abierto" style="display:none">
-      <label>Una vez abierto, consumir en (días)</label>
-      <input id="in-dias-abierto" type="number" min="1" placeholder="Ej: 4">
-    </div>
-    <div style="display:flex; gap:8px; margin-top:16px">
-      <button class="btn-secundario" id="btn-cancelar" style="flex:1">Cancelar</button>
-      <button class="btn-primario" id="btn-guardar" style="flex:2">Guardar</button>
+    <div style="display:flex; gap:8px; margin-top:24px;">
+      <button class="btn-secundario" id="btn-cancelar" style="flex:1; padding:14px;">Cancelar</button>
+      <button class="btn-primario" id="btn-guardar" style="flex:2; padding:14px;">Guardar Producto</button>
     </div>
   </div>
 </div>
 
 <script>
-  const ALIMENTOS = [
-  { n:"Leche fresca", u:"nevera", a:4 }, { n:"Leche UHT", u:"despensa", a:4 },
-  { n:"Yogur natural", u:"nevera", a:3 }, { n:"Nata líquida", u:"nevera", a:3 },
-  { n:"Queso curado", u:"nevera", a:21 }, { n:"Queso fresco", u:"nevera", a:4 },
-  { n:"Mantequilla", u:"nevera", a:21 }, { n:"Pollo", u:"nevera", a:2 },
-  { n:"Ternera", u:"nevera", a:2 }, { n:"Cerdo", u:"nevera", a:2 },
-  { n:"Embutido loncheado", u:"nevera", a:4 }, { n:"Chorizo", u:"nevera", a:14 },
-  { n:"Jamón serrano", u:"nevera", a:21 }, { n:"Pescado fresco", u:"nevera", a:1 },
-  { n:"Gambas cocidas", u:"nevera", a:2 }, { n:"Atún en lata", u:"despensa", a:1 },
-  { n:"Huevos frescos", u:"nevera", a:14 }, { n:"Tomate", u:"nevera", a:5 },
-  { n:"Lechuga", u:"nevera", a:3 }, { n:"Cebolla", u:"despensa", a:21 },
-  { n:"Ajo", u:"despensa", a:60 }, { n:"Pimiento", u:"nevera", a:6 },
-  { n:"Zanahoria", u:"nevera", a:14 }, { n:"Patata", u:"despensa", a:14 },
-  { n:"Champiñones", u:"nevera", a:3 }, { n:"Calabacín", u:"nevera", a:6 },
-  { n:"Berenjena", u:"nevera", a:6 }, { n:"Manzana", u:"despensa", a:10 },
-  { n:"Plátano", u:"despensa", a:4 }, { n:"Arroz", u:"despensa", a:365 },
-  { n:"Pasta", u:"despensa", a:365 }, { n:"Legumbres secas", u:"despensa", a:365 },
-  { n:"Harina", u:"despensa", a:180 }, { n:"Pan", u:"despensa", a:3 },
-  { n:"Aceite de oliva", u:"despensa", a:180 }, { n:"Tomate triturado", u:"despensa", a:4 },
-  { n:"Salsa de tomate", u:"despensa", a:6 }, { n:"Mayonesa", u:"nevera", a:45 },
-  { n:"Caldo", u:"nevera", a:4 }, { n:"Carne congelada", u:"congelador", a:1 },
-  { n:"Pescado congelado", u:"congelador", a:1 }, { n:"Verdura congelada", u:"congelador", a:1 }
+ const ALIMENTOS = [
+  { n:"Leche fresca", u:"nevera", a:4, dias:5 }, { n:"Leche UHT", u:"despensa", a:4, dias:90 },
+  { n:"Leche sin lactosa", u:"nevera", a:4, dias:7 }, { n:"Leche de soja", u:"despensa", a:4, dias:180 },
+  { n:"Bebida de avena", u:"despensa", a:4, dias:180 }, { n:"Yogur natural", u:"nevera", a:3, dias:14 },
+  { n:"Nata líquida", u:"nevera", a:3, dias:7 }, { n:"Queso curado", u:"nevera", a:21, dias:60 },
+  { n:"Queso fresco", u:"nevera", a:4, dias:10 }, { n:"Tofu", u:"nevera", a:3, dias:14 },
+  { n:"Mantequilla", u:"nevera", a:21, dias:30 }, { n:"Pollo", u:"nevera", a:2, dias:3 },
+  { n:"Ternera", u:"nevera", a:2, dias:3 }, { n:"Cerdo", u:"nevera", a:2, dias:3 },
+  { n:"Soja texturizada", u:"despensa", a:0, dias:365 }, { n:"Hummus", u:"nevera", a:3, dias:7 },
+  { n:"Embutido loncheado", u:"nevera", a:4, dias:10 }, { n:"Chorizo", u:"nevera", a:14, dias:30 },
+  { n:"Jamón serrano", u:"nevera", a:21, dias:45 }, { n:"Pescado fresco", u:"nevera", a:1, dias:2 },
+  { n:"Sushi", u:"nevera", a:1, dias:1 }, { n:"Gambas cocidas", u:"nevera", a:2, dias:3 },
+  { n:"Atún en lata", u:"despensa", a:1, dias:365 }, { n:"Huevos frescos", u:"nevera", a:14, dias:21 },
+  { n:"Tomate", u:"nevera", a:5, dias:7 }, { n:"Lechuga", u:"nevera", a:3, dias:5 },
+  { n:"Endivia", u:"nevera", a:3, dias:7 }, { n:"Aguacate", u:"nevera", a:2, dias:5 },
+  { n:"Cebolla", u:"despensa", a:21, dias:30 }, { n:"Ajo", u:"despensa", a:60, dias:90 },
+  { n:"Pimiento", u:"nevera", a:6, dias:10 }, { n:"Zanahoria", u:"nevera", a:14, dias:21 },
+  { n:"Patata", u:"despensa", a:14, dias:30 }, { n:"Champiñones", u:"nevera", a:3, dias:5 },
+  { n:"Calabacín", u:"nevera", a:6, dias:10 }, { n:"Berenjena", u:"nevera", a:6, dias:10 },
+  { n:"Quinoa", u:"despensa", a:0, dias:365 }, { n:"Arroz", u:"despensa", a:0, dias:365 },
+  { n:"Pasta", u:"despensa", a:0, dias:365 }, { n:"Legumbres secas", u:"despensa", a:0, dias:365 },
+  { n:"Harina", u:"despensa", a:0, dias:180 }, { n:"Pan", u:"despensa", a:3, dias:4 },
+  { n:"Aceite de oliva", u:"despensa", a:0, dias:365 }, { n:"Tomate triturado", u:"despensa", a:4, dias:365 },
+  { n:"Mayonesa", u:"nevera", a:45, dias:180 }, { n:"Caldo", u:"nevera", a:4, dias:7 },
+  { n:"Carne congelada", u:"congelador", a:1, dias:180 }, { n:"Pescado congelado", u:"congelador", a:1, dias:180 },
+  { n:"Verdura congelada", u:"congelador", a:1, dias:365 }, { n:"Helado", u:"congelador", a:0, dias:180 }
 ];
 
 const RECETAS = [
-  { n:"Tortilla de patatas", t:30, ing:["Huevos frescos","Patata","Cebolla","Aceite de oliva","Sal"],
-    pasos:["Pelar y cortar las patatas en láminas finas.","Pochar patata y cebolla en aceite a fuego medio 15 min.","Batir los huevos y mezclar con la patata escurrida.","Cuajar en sartén 2 min por cada lado."] },
-  { n:"Pollo al champión con nata", t:30, ing:["Pollo","Champiñones","Nata líquida","Cebolla","Aceite de oliva","Sal"],
-    pasos:["Dorar el pollo troceado en aceite.","Añadir cebolla y champiñones laminados.","Verter la nata y cocer 10 min.","Salpimentar y servir."] },
-  { n:"Lentejas estofadas", t:60, ing:["Legumbres secas","Chorizo","Cebolla","Zanahoria","Ajo","Aceite de oliva","Sal"],
-    pasos:["Pochar cebolla, ajo y zanahoria.","Añadir chorizo y lentejas.","Cubrir con agua y cocer 45 min.","Rectificar de sal."] },
-  { n:"Arroz con pollo", t:45, ing:["Arroz","Pollo","Pimiento","Cebolla","Ajo","Aceite de oliva","Sal"],
-    pasos:["Sofreír pollo troceado.","Añadir pimiento, cebolla y ajo.","Incorporar arroz y agua (doble).","Cocer 18 min y reposar."] },
-  { n:"Pisto manchego", t:40, ing:["Tomate","Calabacín","Berenjena","Pimiento","Cebolla","Aceite de oliva","Sal"],
-    pasos:["Cortar todas las verduras en dados.","Pochar cebolla y pimiento.","Añadir calabacín y berenjena.","Incorporar tomate y cocer 20 min."] },
-  { n:"Crema de champiñones", t:25, ing:["Champiñones","Cebolla","Nata líquida","Caldo","Aceite de oliva","Sal"],
-    pasos:["Pochar cebolla y champiñones.","Añadir caldo y cocer 10 min.","Triturar y añadir nata.","Servir caliente."] }
+  { n:"Tortilla de patatas", t:30, ing:["Huevos frescos","Patata","Cebolla","Aceite de oliva","Sal"], pasos:["Pelar y cortar patatas.","Pochar patata y cebolla 15 min.","Batir huevos y mezclar.","Cuajar en sartén."] },
+  { n:"Pollo al champión con nata", t:30, ing:["Pollo","Champiñones","Nata líquida","Cebolla","Aceite de oliva"], pasos:["Dorar pollo.","Añadir cebolla y champiñones.","Verter nata y cocer 10 min."] },
+  { n:"Lentejas estofadas", t:60, ing:["Legumbres secas","Chorizo","Cebolla","Zanahoria","Ajo"], pasos:["Pochar verduras.","Añadir chorizo y lentejas.","Cocer 45 min."] },
+  { n:"Arroz con pollo", t:45, ing:["Arroz","Pollo","Pimiento","Cebolla","Ajo"], pasos:["Sofreír pollo.","Añadir verduras y arroz.","Cocer 18 min."] },
+  { n:"Pisto manchego", t:40, ing:["Tomate","Calabacín","Berenjena","Pimiento","Cebolla"], pasos:["Cortar verduras.","Pochar cebolla.","Añadir tomate y cocer 20 min."] },
+  { n:"Crema de champiñones", t:25, ing:["Champiñones","Cebolla","Nata líquida","Caldo"], pasos:["Pochar cebolla y champiñones.","Añadir caldo y cocer.","Triturar y añadir nata."] },
+  { n:"Croquetas de jamón", t:45, ing:["Jamón serrano","Leche fresca","Harina","Mantequilla","Huevos frescos","Pan rallado"], pasos:["Hacer bechamel con jamón.","Enfriar 2 horas.","Empanar y freír."] },
+  { n:"Cocido madrileño", t:120, ing:["Legumbres secas","Ternera","Pollo","Chorizo","Zanahoria","Patata"], pasos:["Remojar garbanzos.","Cocer carnes.","Añadir garbanzos y verduras.","Añadir chorizo al final."] },
+  { n:"Albóndigas en salsa", t:50, ing:["Ternera","Huevos frescos","Ajo","Harina","Cebolla","Tomate triturado"], pasos:["Formar bolitas y enharinar.","Freír.","Hacer salsa de tomate y cebolla.","Cocer 20 min."] },
+  { n:"Ensaladilla rusa", t:30, ing:["Patata","Zanahoria","Guisantes","Atún en lata","Mayonesa","Huevos frescos"], pasos:["Cocer verduras.","Picar en dados.","Mezclar con mayonesa y atún."] },
+  { n:"Macarrones con tomate", t:25, ing:["Pasta","Tomate triturado","Cebolla","Ajo","Aceite de oliva"], pasos:["Cocer pasta.","Sofreír ajo y cebolla.","Añadir tomate y mezclar."] },
+  { n:"Merluza al horno", t:30, ing:["Pescado fresco","Patata","Cebolla","Ajo"], pasos:["Patata en rodajas en bandeja.","Poner merluza encima.","Hornear 20 min a 200°C."] },
+  { n:"Sopa de fideos", t:20, ing:["Caldo","Pasta","Zanahoria","Cebolla"], pasos:["Pochar verduras.","Añadir caldo hirviendo.","Echar fideos y cocer 5 min."] },
+  { n:"Revuelto de champiñones", t:15, ing:["Huevos frescos","Champiñones","Ajo","Aceite de oliva"], pasos:["Saltear ajo y champiñones.","Añadir huevos batidos.","Remover hasta cuajar."] },
+  { n:"Patatas a la riojana", t:45, ing:["Patata","Chorizo","Pimiento","Cebolla","Ajo","Pimentón","Caldo"], pasos:["Sofreír cebolla y pimiento.","Añadir chorizo y patatas.","Cubrir con caldo y cocer."] },
+  { n:"Pimientos de Padrón", t:10, ing:["Pimiento","Aceite de oliva","Sal"], pasos:["Lavar y secar.","Freír en aceite muy caliente.","Escurrir y echar sal gorda."] },
+  { n:"Flan de huevo casero", t:50, ing:["Huevos frescos","Leche fresca","Azúcar","Vainilla"], pasos:["Hacer caramelo en el molde.","Batir huevos, leche y azúcar.","Baño María en el horno 40 min."] },
+  { n:"Arroz con leche", t:40, ing:["Arroz","Leche fresca","Azúcar","Canela","Limón"], pasos:["Cocer arroz en agua 5 min.","Añadir leche y azúcar.","Cocer a fuego lento removiendo."] },
+  { n:"Tarta de queso", t:60, ing:["Queso fresco","Huevos frescos","Azúcar","Nata líquida","Harina"], pasos:["Batir queso y azúcar.","Añadir huevos y nata.","Hornear a 200°C 40 min."] },
+  { n:"Bizcocho de yogur", t:45, ing:["Yogur natural","Huevos frescos","Harina","Azúcar","Aceite de oliva","Levadura"], pasos:["Mezclar yogur, huevos y azúcar.","Añadir harina y levadura.","Hornear a 180°C 35 min."] },
+  { n:"Ternera guisada", t:90, ing:["Ternera","Zanahoria","Cebolla","Ajo","Vino tinto","Harina","Caldo"], pasos:["Pasar carne por harina y dorar.","Añadir vino y verduras.","Cocer 1 hora y media."] },
+  { n:"Mejillones al vapor", t:15, ing:["Mejillones","Limón","Laurel","Vino blanco"], pasos:["Limpiar mejillones.","Olla con vino y laurel.","Cocer hasta que se abran."] },
+  { n:"Ensalada de garbanzos", t:10, ing:["Legumbres secas","Tomate","Cebolla","Atún en lata","Aceite de oliva","Vinagre"], pasos:["Escurrir garbanzos.","Picar tomate y cebolla.","Mezclar todo con atún y aliño."] },
+  { n:"Pollo asado al limón", t:60, ing:["Pollo","Limón","Ajo","Tomillo","Aceite de oliva","Patata"], pasos:["Untar pollo con limón y especias.","Poner con patatas en bandeja.","Hornear 50 min a 200°C."] },
+  { n:"Tofu salteado con verduras", t:20, ing:["Tofu","Pimiento","Cebolla","Calabacín","Salsa de soja","Aceite de oliva"], pasos:["Cortar tofu en dados y dorar.","Saltear verduras.","Mezclar todo con salsa de soja."] }
 ];
-let existencias = []; let siguienteId = 1; let seleccionActual = null;
+ let existencias = []; let siguienteId = 1; let seleccionActual = null;
 
 function cargar(){ try { const raw = localStorage.getItem('despensa_v1'); if (raw) { const d = JSON.parse(raw); existencias = d.existencias || []; siguienteId = d.siguienteId || 1; } } catch(e) { existencias = []; siguienteId = 1; } }
 function guardar(){ localStorage.setItem('despensa_v1', JSON.stringify({ existencias: existencias, siguienteId: siguienteId })); }
@@ -156,8 +191,7 @@ function buscarAlimento(nombre){ return ALIMENTOS.find(a => a.n.toLowerCase() ==
 function renderTodo(){ ['nevera','congelador','despensa'].forEach(renderPanel); renderRecetas(); renderAvisos(); }
 
 function renderPanel(ubi){
-  const panel = document.getElementById('panel-' + ubi);
-  if (!panel) return;
+  const panel = document.getElementById('panel-' + ubi); if (!panel) return;
   const items = existencias.filter(e => e.ubicacion === ubi && !e.gastado);
   if (items.length === 0){ panel.innerHTML = '<div class="vacio">No hay nada en ' + ubi + '.</div>'; return; }
   items.sort((a,b) => { const da = diasHasta(a.caduca); const db = diasHasta(b.caduca); if (da === null) return 1; if (db === null) return -1; return da - db; });
@@ -165,79 +199,71 @@ function renderPanel(ubi){
   items.forEach(e => {
     const dias = diasHasta(e.caduca);
     let clase = 'item'; if (dias !== null && dias < 0) clase += ' caducado'; else if (dias !== null && dias <= 2) clase += ' urgente';
-    html += '<div class="' + clase + '"><div class="info"><div class="nombre">' + e.nombre + (e.abierto ? ' · abierto' : '') + '</div><div class="detalle">Caduca: ' + formatoFecha(e.caduca) + (dias !== null ? ' · ' + (dias < 0 ? 'caducado' : (dias === 0 ? 'hoy' : dias + ' días')) : '') + '</div></div><div class="acciones">' + (e.abierto ? '' : '<button class="btn-abrir" onclick="abrirProducto(' + e.id + ')">Abrir</button>') + '<button class="btn-gastar" onclick="gastarProducto(' + e.id + ')">Gastar</button></div></div>';
+    html += '<div class="' + clase + '"><div class="info"><div class="nombre">' + (e.abierto ? '🔓 ' : '📦 ') + e.nombre + '</div><div class="detalle">📅 Caduca: ' + formatoFecha(e.caduca) + (dias !== null ? ' · ' + (dias < 0 ? '❌ caducado' : (dias === 0 ? '⚠️ hoy' : '⏳ ' + dias + ' días')) : '') + '</div></div><div class="acciones">' + (e.abierto ? '' : '<button class="btn-abrir" onclick="abrirProducto(' + e.id + ')">Abrir</button>') + '<button class="btn-gastar" onclick="gastarProducto(' + e.id + ')">Gastar</button></div></div>';
   });
   panel.innerHTML = html;
 }
 
 function renderAvisos(){
-  const cont = document.getElementById('avisos-globales');
-  if (!cont) return;
+  const cont = document.getElementById('avisos-globales'); if (!cont) return;
   const proximos = existencias.filter(e => !e.gastado && e.caduca).map(e => ({ e, dias: diasHasta(e.caduca) })).filter(x => x.dias !== null && x.dias <= 3).sort((a,b) => a.dias - b.dias);
   if (proximos.length === 0){ cont.innerHTML = ''; return; }
   let html = '';
   proximos.forEach(x => {
     const clase = x.dias < 0 ? 'rojo' : 'ambar';
     const txt = x.dias < 0 ? 'Caducado' : (x.dias === 0 ? 'Caduca hoy' : 'Caduca en ' + x.dias + ' días');
-    html += '<div class="aviso ' + clase + '"><b>' + txt + '</b>' + x.e.nombre + '</div>';
+    html += '<div class="aviso ' + clase + '"><b>' + (x.dias < 0 ? '❌ ' : '⚠️ ') + txt + ':</b> <span>' + x.e.nombre + '</span></div>';
   });
   cont.innerHTML = html;
 }
 
 function abrirProducto(id){
-  const e = existencias.find(x => x.id === id);
-  if (!e) return;
-  const alim = buscarAlimento(e.nombre);
-  const dias = alim && alim.a ? alim.a : (e.diasAbierto || 3);
-  const nueva = new Date(hoy().getTime() + dias * 24*60*60*1000);
-  const impresa = aFecha(e.caduca);
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  const alim = buscarAlimento(e.nombre); const dias = alim && alim.a ? alim.a : 3;
+  const nueva = new Date(hoy().getTime() + dias * 24*60*60*1000); const impresa = aFecha(e.caduca);
   let final = nueva; if (impresa && impresa < nueva) final = impresa;
-  e.abierto = true; e.caduca = final.toISOString().slice(0,10);
-  guardar(); renderTodo();
+  e.abierto = true; e.caduca = final.toISOString().slice(0,10); guardar(); renderTodo();
 }
 
 function gastarProducto(id){
-  const e = existencias.find(x => x.id === id);
-  if (!e) return;
+  const e = existencias.find(x => x.id === id); if (!e) return;
   if (!confirm('¿Gastar ' + e.nombre + '?')) return;
   e.gastado = true; guardar(); renderTodo();
 }
 
 function abrirModal(){
-  seleccionActual = null;
-  document.getElementById('in-nombre').value = ''; document.getElementById('in-caduca').value = '';
-  document.getElementById('in-ubi').value = 'nevera'; document.getElementById('campo-dias-abierto').style.display = 'none';
-  document.getElementById('in-dias-abierto').value = ''; document.getElementById('sugerencias').style.display = 'none';
-  document.getElementById('sugerencias').innerHTML = ''; document.getElementById('modal').classList.add('abierto');
+  seleccionActual = null; document.getElementById('in-nombre').value = ''; document.getElementById('in-caduca').value = ''; document.getElementById('in-ubi').value = 'nevera';
+  document.getElementById('sugerencias').style.display = 'none'; document.getElementById('ocr-estado').style.display = 'none';
+  document.getElementById('modal').classList.add('abierto');
 }
-
 function cerrarModal(){ document.getElementById('modal').classList.remove('abierto'); }
 
 function alEscribirNombre(){
-  const v = document.getElementById('in-nombre').value.trim().toLowerCase();
-  const cont = document.getElementById('sugerencias');
+  const v = document.getElementById('in-nombre').value.trim().toLowerCase(); const cont = document.getElementById('sugerencias');
   if (v.length < 2){ cont.style.display = 'none'; return; }
   const matches = ALIMENTOS.filter(a => a.n.toLowerCase().includes(v)).slice(0, 8);
   if (matches.length === 0){ cont.innerHTML = '<div onclick="elegirLibre()">Usar «' + document.getElementById('in-nombre').value + '» (nuevo)</div>'; cont.style.display = 'block'; return; }
-  cont.innerHTML = matches.map(a => '<div onclick="elegirAlimento(\'' + a.n.replace(/'/g, "\\'") + '\')">' + a.n + '</div>').join('');
-  cont.style.display = 'block';
+  cont.innerHTML = matches.map(a => '<div onclick="elegirAlimento(\'' + a.n.replace(/'/g, "\\'") + '\')">' + a.n + '</div>').join(''); cont.style.display = 'block';
 }
 
 function elegirAlimento(nombre){
   document.getElementById('in-nombre').value = nombre; document.getElementById('sugerencias').style.display = 'none';
-  seleccionActual = buscarAlimento(nombre); if (seleccionActual){ document.getElementById('in-ubi').value = seleccionActual.u; }
+  seleccionActual = buscarAlimento(nombre);
+  if (seleccionActual){
+    document.getElementById('in-ubi').value = seleccionActual.u;
+    if (seleccionActual.dias && seleccionActual.dias > 0) {
+      const f = new Date(hoy().getTime() + seleccionActual.dias * 24*60*60*1000);
+      document.getElementById('in-caduca').value = f.toISOString().slice(0,10);
+    }
+  }
 }
-
-function elegirLibre(){
-  seleccionActual = null; document.getElementById('sugerencias').style.display = 'none';
-  document.getElementById('campo-dias-abierto').style.display = 'block';
-}
+function elegirLibre(){ seleccionActual = null; document.getElementById('sugerencias').style.display = 'none'; }
 
 function guardarProducto(){
   const nombre = document.getElementById('in-nombre').value.trim(); const caduca = document.getElementById('in-caduca').value;
-  const ubi = document.getElementById('in-ubi').value; const diasAbierto = parseInt(document.getElementById('in-dias-abierto').value) || null;
-  if (!nombre){ alert('Escribe un nombre'); return; } if (!caduca){ alert('Pon la fecha de caducidad'); return; }
-  existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false, diasAbierto: diasAbierto || null });
+  const ubi = document.getElementById('in-ubi').value;
+  if (!nombre){ alert('Escribe un nombre'); return; }
+  existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false });
   guardar(); cerrarModal(); renderTodo();
 }
 
@@ -245,28 +271,94 @@ function renderRecetas(){
   const panel = document.getElementById('panel-recetas'); if (!panel) return;
   const abiertos = existencias.filter(e => !e.gastado).map(e => e.nombre.toLowerCase());
   const proximos = existencias.filter(e => !e.gastado).filter(e => { const d = diasHasta(e.caduca); return d !== null && d <= 5; }).map(e => e.nombre.toLowerCase());
-  const sugeridas = RECETAS.map(r => {
+  
+  const todas = RECETAS.map(r => {
     const usa = r.ing.filter(i => abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)));
     const deCaducan = r.ing.filter(i => proximos.some(p => p.includes(i.toLowerCase()) || i.toLowerCase().includes(p)));
     return { r: r, usa: usa.length, deCaducan: deCaducan.length };
-  }).filter(x => x.usa >= 2).sort((a,b) => b.deCaducan - a.deCaducan || b.usa - a.usa).slice(0, 8);
-  
-  if (sugeridas.length === 0){ panel.innerHTML = '<div class="vacio">Añade productos a la despensa para ver recetas.</div>'; return; }
-  let html = '<h2 style="margin:0 0 10px;color:#2e5c3e">Sugerencias con lo que tienes</h2>';
-  sugeridas.forEach(x => {
-    html += '<div class="receta"><h3>' + x.r.n + '</h3><div class="meta">' + x.r.t + ' min · usa ' + x.usa + ' de tus ingredientes' + (x.deCaducan > 0 ? ' · <b style="color:#c62828">' + x.deCaducan + ' caducan pronto</b>' : '') + '</div><div class="ing">' + x.r.ing.map(i => { const tiene = abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)); return '<span class="' + (tiene ? 'tiene' : 'falta') + '">' + (tiene ? '✓ ' : '· ') + i + '</span>'; }).join(' · ') + '</div><ol class="pasos">' + x.r.pasos.map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
+  }).sort((a,b) => b.deCaducan - a.deCaducan || b.usa - a.usa || a.r.n.localeCompare(b.r.n));
+
+  let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Recetario Completo</h2>';
+  html += '<input type="text" id="buscador-receta" class="buscador" placeholder="🔍 Buscar receta..." onkeyup="filtrarRecetas(this.value)">';
+  html += '<div id="lista-recetas">';
+
+  todas.forEach(x => {
+    let badge = '';
+    if (x.deCaducan > 0) badge = '<b style="color:#c62828; font-size:14px;">(¡Gastar pronto!)</b>';
+    else if (x.usa >= 2) badge = '<b style="color:#2e7d32; font-size:14px;">(Puedes hacerlo)</b>';
+
+    html += '<div class="receta" data-nombre="' + x.r.n.toLowerCase() + '"><h3>' + x.r.n + ' ' + badge + '</h3><div class="meta">⏱ ' + x.r.t + ' min · tienes ' + x.usa + ' de ' + x.r.ing.length + ' ing.</div><div class="ing">' + x.r.ing.map(i => { const tiene = abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)); return '<span class="' + (tiene ? 'tiene' : 'falta') + '">' + (tiene ? '✓ ' : '· ') + i + '</span>'; }).join(' · ') + '</div><ol class="pasos">' + x.r.pasos.map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
   });
+  html += '</div>';
   panel.innerHTML = html;
+}
+
+function filtrarRecetas(texto) {
+  const filtro = texto.toLowerCase();
+  const recetas = document.querySelectorAll('#lista-recetas .receta');
+  recetas.forEach(r => {
+    if (r.getAttribute('data-nombre').includes(filtro)) { r.style.display = 'block'; }
+    else { r.style.display = 'none'; }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('fecha-hoy').textContent = hoy().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   document.querySelectorAll('.tab').forEach(t => { t.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa')); document.querySelectorAll('.panel').forEach(x => x.classList.remove('activa')); t.classList.add('activa'); document.getElementById('panel-' + t.dataset.tab).classList.add('activa'); }); });
-  document.getElementById('fab-add').addEventListener('click', abrirModal); document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
-  document.getElementById('btn-guardar').addEventListener('click', guardarProducto); document.getElementById('in-nombre').addEventListener('input', alEscribirNombre);
+  
+  document.getElementById('fab-add').addEventListener('click', abrirModal); 
+  document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
+  document.getElementById('btn-guardar').addEventListener('click', guardarProducto); 
+  document.getElementById('in-nombre').addEventListener('input', alEscribirNombre);
+
+  document.getElementById('btn-micro').addEventListener('click', function(){
+    if (!('webkitSpeechRecognition' in window)) { alert('Tu móvil no soporta dictado por voz.'); return; }
+    const rec = new webkitSpeechRecognition();
+    rec.lang = 'es-ES'; rec.interimResults = false; rec.maxAlternatives = 1;
+    rec.onstart = () => { this.textContent = '🔴'; this.style.background = '#ffcccc'; };
+    rec.onresult = (e) => { document.getElementById('in-nombre').value = e.results[0][0].transcript; alEscribirNombre(); };
+    rec.onend = () => { this.textContent = '🎤'; this.style.background = '#f0f0f0'; };
+    rec.start();
+  });
+
+  document.getElementById('btn-camara').addEventListener('click', () => { document.getElementById('in-foto').click(); });
+  document.getElementById('in-foto').addEventListener('change', function(e){
+    if (!e.target.files.length) return;
+    const file = e.target.files[0];
+    const estado = document.getElementById('ocr-estado');
+    estado.style.display = 'block'; estado.textContent = '⏳ Analizando foto...'; estado.style.color = '#3e5c42';
+    
+    Tesseract.recognize(file, 'spa').then(({ data: { text } }) => {
+      const regex = /(\d{1,2})[\/\-\.]([0-9]{1,2})[\/\-\.]([0-9]{2,4})/;
+      const match = text.match(regex);
+      if (match) {
+         let d = match[1].padStart(2, '0'); let m = match[2].padStart(2, '0'); let a = match[3];
+         if (a.length === 2) a = '20' + a;
+         document.getElementById('in-caduca').value = a + '-' + m + '-' + d;
+         estado.textContent = '✅ Fecha detectada: ' + d + '/' + m + '/' + a; estado.style.color = '#2e7d32';
+      } else {
+         estado.textContent = '⚠️ No se ha detectado bien la fecha.'; estado.style.color = '#c62828';
+      }
+    }).catch(err => {
+      estado.textContent = '❌ Error al leer la imagen.'; estado.style.color = '#c62828';
+    });
+  });
+
+  document.getElementById('btn-backup').addEventListener('click', function(){
+    const data = localStorage.getItem('despensa_v1');
+    if(!data || data === '{"existencias":[],"siguienteId":1}') { alert("La despensa está vacía."); return; }
+    prompt("Copia este texto y guárdalo en un WhatsApp para ti:", data);
+  });
+  document.getElementById('btn-restore').addEventListener('click', function(){
+    const data = prompt("Pega aquí el texto de la copia de seguridad:");
+    if(data){
+      try { JSON.parse(data); localStorage.setItem('despensa_v1', data); alert("¡Copia cargada con éxito!"); location.reload(); } 
+      catch(e) { alert("El texto no es válido."); }
+    }
+  });
+
   cargar(); renderTodo();
 });
 </script>
 </body>
 </html>
-
