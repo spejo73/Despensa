@@ -162,3 +162,30 @@ RECETAS = RECETAS.concat([
   { n:"Calabacines rellenos de atún", t:30, ing:["2 Calabacines","2 Latas de atún","Tomate frito","Cebolla","Queso"], pasos:["1. Partir calabacines y vaciar.","2. Mezclar pulpa con atún, cebolla y tomate.","3. Rellenar, cubrir con queso y hornear 20 min."] },
   { n:"Tarta de manzana (Airfryer)", t:35, ing:["2 Manzanas","1 Masa","Azúcar","Canela"], pasos:["1. Forrar molde.","2. Poner manzanas laminadas.","3. Airfryer 160°C 25 min."] }
 ]);
+RECETAS = RECETAS.concat([
+  { n:"Patatas bravas (Airfryer)", t:30, ing:["3 Patatas","Tomate frito","Mayonesa","Pimentón"], pasos:["1. Patatas en dados a la Airfryer 180°C 20 min.","2. Mezclar tomate, mayonesa y pimentón.","3. Servir con salsa."] },
+  { n:"Pollo al ajillo (Thermomix)", t:30, ing:["1 Pollo troceado","6 Ajos","Vino blanco","Aceite"], pasos:["1. Dorar ajos 5 min/Varoma/vel 1.","2. Añadir pollo y vino. Cocer 20 min/Varoma/giro izq/vel cuchara."] },
+  { n:"Arroz caldoso (Thermomix)", t:30, ing:["200g Arroz","500ml Caldo","1 Cebolla","1 Zanahoria"], pasos:["1. Pochar verduras 5 min/Varoma/vel 1.","2. Añadir arroz y caldo. Cocer 15 min/100°C/giro izq/vel cuchara."] },
+  { n:"Sopa de pescado (Thermomix)", t:40, ing:["Espinas de pescado","Cebolla","Zanahoria","Agua"], pasos:["1. Pochar verduras.","2. Añadir espinas y agua. Cocer 30 min/Varoma/vel 1.","3. Colar."] },
+  { n:"Tortilla de patatas (Thermomix)", t:40, ing:["4 Huevos","3 Patatas","1 Cebolla","Aceite"], pasos:["1. Picar patata y cebolla 5 seg/vel 4.","2. Freír en sartén.","3. Mezclar con huevo y cuajar."] },
+  { n:"Pisto (Thermomix)", t:30, ing:["1 Calabacín","1 Pimiento","1 Cebolla","2 Tomates"], pasos:["1. Trocear verduras 5 seg/vel 5.","2. Sofreír 15 min/Varoma/vel 1."] },
+  { n:"Lubina al horno con patatas", t:35, ing:["1 Lubina entera","3 Patatas","1 Cebolla","Aceite","Limón"], pasos:["1. Cortar patatas y cebolla en rodajas finas.","2. Poner en bandeja con la lubina encima.","3. Hornear 200°C 20 min con limón."] },
+  { n:"Pechugas de pollo a la plancha", t:15, ing:["2 Pechugas","1 Limón","Orégano","Aceite"], pasos:["1. Filetear pechugas.","2. Hacer a la plancha.","3. Echar limón y orégano."] },
+  { n:"Ensalada de garbanzos y atún", t:10, ing:["400g Garbanzos","2 Latas de atún","Tomate","Cebolla","Aceite y vinagre"], pasos:["1. Mezclar todos los ingredientes.","2. Aliñar al gusto."] },
+  { n:"Paté de berenjena", t:40, ing:["2 Berenjenas","Ajo","Aceite","Limón"], pasos:["1. Asar berenjenas 200°C 30 min.","2. Sacar pulpa y triturar con ajo, aceite y limón."] },
+  { n:"Higos con jamón", t:10, ing:["4 Higos frescos","4 Lonchas de jamón serrano"], pasos:["1. Abrir los higos.","2. Envolver con el jamón.","3. Servir."] },
+  { n:"Tarta de queso sin horno", t:20, ing:["1 Queso crema","200ml Nata","3 cdas Azúcar","1 Masa de galletas"], pasos:["1. Triturar galletas y poner en molde.","2. Batir queso, nata y azúcar.","3. Verter y enfriar 4 horas."] },
+  { n:"Sopa de verduras", t:30, ing:["1 Puerro","1 Zanahoria","1 Patata","1 Cebolla","Caldo"], pasos:["1. Trocear verduras.","2. Cocer en caldo 20 min.","3. Triturar o dejar entera."] },
+  { n:"Pollo con arroz y verduras", t:35, ing:["1 Pollo troceado","200g Arroz","1 Pimiento","1 Zanahoria","Caldo"], pasos:["1. Dorar pollo.","2. Añadir arroz y verduras.","3. Echar caldo y cocer 18 min."] },
+  { n:"Tortilla de espinacas", t:15, ing:["4 Huevos","200g Espinacas","1 Cebolla"], pasos:["1. Saltear espinacas con cebolla.","2. Mezclar con huevos.","3. Cuajar."] },
+  { n:"Lasaña de verduras", t:50, ing:["12 Placas","1 Calabacín","1 Berenjena","Tomate triturado","Bechamel"], pasos:["1. Asar verduras.","2. Montar capas con tomate y bechamel.","3. Hornear 200°C 25 min."] },
+  { n:"Tarta de chocolate y galletas", t:15, ing:["Galletas","Chocolate","Mantequilla","Leche"], pasos:["1. Derretir chocolate.","2. Alternar capas.","3. Enfriar."] },
+  { n:"Pasta con verduras", t:20, ing:["250g Pasta","1 Calabacín","1 Pimiento","Tomate triturado"], pasos:["1. Cocer pasta.","2. Saltear verduras.","3. Mezclar con la pasta y tomate."] },
+  { n:"Pollo a la naranja (Airfryer)", t:30, ing:["4 Alitas","Zumo de naranja","Soja","Miel"], pasos:["1. Adobar alitas.","2. Airfryer 180°C 20 min.","3. Pintar con la salsa a mitad."] },
+  { n:"Arroz con leche (Airfryer)", t:40, ing:["150g Arroz","1 Litro leche","Azúcar","Canela"], pasos:["1. Mezclar en molde apto.","2. Airfryer 160°C 30 min removiendo."] },
+  { n:"Salmón al limón (Thermomix)", t:20, ing:["2 Lomos salmón","Limón","Caldo","Aceite"], pasos:["1. Poner agua en el vaso.","2. Salmón en Varoma con limón.","3. Cocer 15 min/Varoma/vel 1."] },
+  { n:"Flan de huevo (Airfryer)", t:40, ing:["4 Huevos","500ml Leche","Azúcar","Caramelo"], pasos:["1. Caramelo en molde.","2. Batir huevos y leche.","3. Airfryer 160°C 25 min al baño María."] },
+  { n:"Pollo a la cerveza (Thermomix)", t:40, ing:["1 Pollo","1 Cerveza","Cebolla","Ajo"], pasos:["1. Dorar pollo.","2. Añadir cerveza y verduras.","3. Cocer 30 min/100°C/giro izq/vel cuchara."] },
+  { n:"Merluza a la plancha", t:15, ing:["4 Lomos merluza","Ajo","Perejil","Aceite"], pasos:["1. Calentar plancha.","2. Hacer merluza 3 min por lado.","3. Echar ajo y perejil."] },
+  { n:"Ensalada de frutas", t:10, ing:["1 Manzana","1 Naranja","1 Plátano","1 Kiwi"], pasos:["1. Pelar y trocear frutas.","2. Mezclar en bol.","3. Añadir zumo naranja."] }
+]);
