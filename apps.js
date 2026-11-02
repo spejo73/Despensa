@@ -41,3 +41,65 @@ function renderAvisos(){
   });
   cont.innerHTML = html;
 }
+function abrirProducto(id){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  const alim = buscarAlimento(e.nombre); const dias = alim && alim.a ? alim.a : 3;
+  const nueva = new Date(hoy().getTime() + dias * 24*60*60*1000); const impresa = aFecha(e.caduca);
+  let final = nueva; if (impresa && impresa < nueva) final = impresa;
+  e.abierto = true; e.caduca = final.toISOString().slice(0,10); guardar(); renderTodo();
+}
+
+function gastarProducto(id){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  if (!confirm('¿Gastar ' + e.nombre + '?')) return;
+  e.gastado = true; guardar(); renderTodo();
+}
+
+function moverProducto(id, destino){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  e.ubicacion = destino;
+  if(destino === 'congelador'){
+    const nueva = new Date(hoy().getTime() + 90 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10); e.abierto = false; 
+  } else if (destino === 'nevera'){
+    const nueva = new Date(hoy().getTime() + 2 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10);
+  }
+  guardar(); renderTodo();
+}
+
+function abrirModal(){
+  seleccionActual = null; document.getElementById('in-nombre').value = ''; document.getElementById('in-caduca').value = ''; document.getElementById('in-ubi').value = 'nevera';
+  document.getElementById('sugerencias').style.display = 'none'; document.getElementById('ocr-estado').style.display = 'none';
+  document.getElementById('modal').classList.add('abierto');
+}
+function cerrarModal(){ document.getElementById('modal').classList.remove('abierto'); }
+
+function alEscribirNombre(){
+  const v = document.getElementById('in-nombre').value.trim().toLowerCase(); const cont = document.getElementById('sugerencias');
+  if (v.length < 2){ cont.style.display = 'none'; return; }
+  const matches = ALIMENTOS.filter(a => a.n.toLowerCase().includes(v)).slice(0, 8);
+  if (matches.length === 0){ cont.innerHTML = '<div style="padding:10px; cursor:pointer;" onclick="elegirLibre()">Usar «' + document.getElementById('in-nombre').value + '» (nuevo)</div>'; cont.style.display = 'block'; return; }
+  cont.innerHTML = matches.map(a => '<div style="padding:10px; cursor:pointer; border-bottom:1px solid #eee;" onclick="elegirAlimento(\'' + a.n.replace(/'/g, "\\'") + '\')">' + a.n + '</div>').join(''); cont.style.display = 'block';
+}
+
+function elegirAlimento(nombre){
+  document.getElementById('in-nombre').value = nombre; document.getElementById('sugerencias').style.display = 'none';
+  seleccionActual = buscarAlimento(nombre);
+  if (seleccionActual){
+    document.getElementById('in-ubi').value = seleccionActual.u;
+    if (seleccionActual.dias && seleccionActual.dias > 0) {
+      const f = new Date(hoy().getTime() + seleccionActual.dias * 24*60*60*1000);
+      document.getElementById('in-caduca').value = f.toISOString().slice(0,10);
+    }
+  }
+}
+function elegirLibre(){ seleccionActual = null; document.getElementById('sugerencias').style.display = 'none'; }
+
+function guardarProducto(){
+  const nombre = document.getElementById('in-nombre').value.trim(); const caduca = document.getElementById('in-caduca').value;
+  const ubi = document.getElementById('in-ubi').value;
+  if (!nombre){ alert('Escribe un nombre'); return; }
+  existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false });
+  guardar(); cerrarModal(); renderTodo();
+}
