@@ -1,3 +1,31 @@
+const ALIMENTOS = [
+  { n:"Leche fresca", u:"nevera", a:4, dias:5, c:false }, { n:"Leche UHT", u:"despensa", a:4, dias:90, c:false },
+  { n:"Leche sin lactosa", u:"nevera", a:4, dias:7, c:false }, { n:"Leche de soja", u:"despensa", a:4, dias:180, c:false },
+  { n:"Bebida de avena", u:"despensa", a:4, dias:180, c:false }, { n:"Yogur natural", u:"nevera", a:3, dias:14, c:false },
+  { n:"Nata líquida", u:"nevera", a:3, dias:7, c:false }, { n:"Queso curado", u:"nevera", a:21, dias:60, c:false },
+  { n:"Queso fresco", u:"nevera", a:4, dias:10, c:false }, { n:"Tofu", u:"nevera", a:3, dias:14, c:false },
+  { n:"Mantequilla", u:"nevera", a:21, dias:30 }, { n:"Pollo", u:"nevera", a:2, dias:3 },
+  { n:"Ternera", u:"nevera", a:2, dias:3 }, { n:"Cerdo", u:"nevera", a:2, dias:3 },
+  { n:"Soja texturizada", u:"despensa", a:0, dias:365 }, { n:"Hummus", u:"nevera", a:3, dias:7, c:false },
+  { n:"Embutido loncheado", u:"nevera", a:4, dias:10, c:false }, { n:"Chorizo", u:"nevera", a:14, dias:30, c:false },
+  { n:"Jamón serrano", u:"nevera", a:21, dias:45, c:false }, { n:"Pescado fresco", u:"nevera", a:1, dias:2 },
+  { n:"Sushi", u:"nevera", a:1, dias:1, c:false }, { n:"Gambas cocidas", u:"nevera", a:2, dias:3 },
+  { n:"Atún en lata", u:"despensa", a:1, dias:365 }, { n:"Huevos frescos", u:"nevera", a:14, dias:21, c:false },
+  { n:"Tomate", u:"nevera", a:5, dias:7, c:false }, { n:"Lechuga", u:"nevera", a:3, dias:5, c:false },
+  { n:"Endivia", u:"nevera", a:3, dias:7, c:false }, { n:"Aguacate", u:"nevera", a:2, dias:5, c:false },
+  { n:"Cebolla", u:"despensa", a:21, dias:30, c:false }, { n:"Ajo", u:"despensa", a:60, dias:90, c:false },
+  { n:"Pimiento", u:"nevera", a:6, dias:10 }, { n:"Zanahoria", u:"nevera", a:14, dias:21 },
+  { n:"Patata", u:"despensa", a:14, dias:30, c:false }, { n:"Champiñones", u:"nevera", a:3, dias:5 },
+  { n:"Calabacín", u:"nevera", a:6, dias:10, c:false }, { n:"Berenjena", u:"nevera", a:6, dias:10, c:false },
+  { n:"Quinoa", u:"despensa", a:0, dias:365 }, { n:"Arroz", u:"despensa", a:0, dias:365 },
+  { n:"Pasta", u:"despensa", a:0, dias:365 }, { n:"Legumbres secas", u:"despensa", a:0, dias:365 },
+  { n:"Harina", u:"despensa", a:0, dias:180 }, { n:"Pan", u:"despensa", a:3, dias:4 },
+  { n:"Aceite de oliva", u:"despensa", a:0, dias:365 }, { n:"Tomate triturado", u:"despensa", a:4, dias:365 },
+  { n:"Mayonesa", u:"nevera", a:45, dias:180, c:false }, { n:"Caldo", u:"nevera", a:4, dias:7 },
+  { n:"Carne congelada", u:"congelador", a:1, dias:180 }, { n:"Pescado congelado", u:"congelador", a:1, dias:180 },
+  { n:"Verdura congelada", u:"congelador", a:1, dias:365 }, { n:"Helado", u:"congelador", a:0, dias:180 }
+];
+
 let existencias = []; let siguienteId = 1; let seleccionActual = null;
 
 function cargar(){ try { const raw = localStorage.getItem('despensa_v1'); if (raw) { const d = JSON.parse(raw); existencias = d.existencias || []; siguienteId = d.siguienteId || 1; } } catch(e) { existencias = []; siguienteId = 1; } }
@@ -41,6 +69,7 @@ function renderAvisos(){
   });
   cont.innerHTML = html;
 }
+
 function abrirProducto(id){
   const e = existencias.find(x => x.id === id); if (!e) return;
   const alim = buscarAlimento(e.nombre); const dias = alim && alim.a ? alim.a : 3;
@@ -103,6 +132,7 @@ function guardarProducto(){
   existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false });
   guardar(); cerrarModal(); renderTodo();
 }
+
 function renderRecetas(){
   const panel = document.getElementById('panel-recetas'); if (!panel) return;
   const abiertos = existencias.filter(e => !e.gastado).map(e => e.nombre.toLowerCase());
@@ -156,7 +186,9 @@ function extraerFechaInteligente(texto) {
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-  document.getElementById('fecha-hoy').textContent = hoy().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  let reloj = document.getElementById('fecha-hoy');
+  if (reloj) reloj.textContent = hoy().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  
   document.querySelectorAll('.tab').forEach(t => { t.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa')); document.querySelectorAll('.panel').forEach(x => x.classList.remove('activa')); t.classList.add('activa'); document.getElementById('panel-' + t.dataset.tab).classList.add('activa'); }); });
   
   document.getElementById('fab-add').addEventListener('click', abrirModal); 
