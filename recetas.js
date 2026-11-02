@@ -135,3 +135,30 @@ RECETAS = RECETAS.concat([
   { n:"Pollo en pepitoria", t:60, ing:["1 Pollo troceado","1 Cebolla","2 Ajos","1 Yema de huevo","Almendras","Vino blanco"], pasos:["1. Dorar el pollo.","2. Pochar cebolla y ajo.","3. Añadir vino y caldo, cocer 30 min.","4. Triturar yema, almendras y añadir al final."] },
   { n:"Trucha a la navarra", t:20, ing:["2 Truchas","4 Lonchas de jamón serrano","Harina","Aceite"], pasos:["1. Limpiar truchas y meter jamón dentro.","2. Pasar por harina.","3. Freír en aceite caliente 4 min por lado."] }
 ]);
+RECETAS = RECETAS.concat([
+  { n:"Ensalada de tomate y mozzarella", t:10, ing:["2 Tomates grandes","1 Bola de mozzarella","Albahaca","Aceite de oliva","Sal"], pasos:["1. Cortar tomate y mozzarella en rodajas.","2. Alternar en un plato.","3. Aliñar con albahaca, aceite y sal."] },
+  { n:"Huevos a la flamenca", t:25, ing:["4 Huevos","200g Guisantes","Tomate triturado","1 Cebolla","Jamón"], pasos:["1. Hacer una salsa con cebolla y tomate.","2. Añadir guisantes y jamón.","3. Escalfar los huevos en la salsa."] },
+  { n:"Lomo de salmón al horno", t:20, ing:["4 Lomos de salmón","1 Limón","Eneldo","Aceite de oliva"], pasos:["1. Poner el salmón en bandeja.","2. Echar limón, eneldo y aceite.","3. Hornear a 180°C 12 min."] },
+  { n:"Crema de zanahoria y jengibre", t:30, ing:["4 Zanahorias","1 Patata","1 Cebolla","Jengibre","Caldo"], pasos:["1. Pochar cebolla, zanahoria y jengibre.","2. Cubrir con caldo y cocer 20 min.","3. Triturar."] },
+  { n:"Pechugas de pollo rellenas", t:35, ing:["2 Pechugas","100g Queso","4 Lonchas de jamón","Pan rallado"], pasos:["1. Abrir pechugas y rellenar con queso y jamón.","2. Cerrar con palillos y empanar.","3. Hornear a 200°C 20 min."] },
+  { n:"Tarta de galletas y chocolate", t:20, ing:["1 Paquete de galletas","200g Chocolate","500ml Leche","Mantequilla"], pasos:["1. Derretir chocolate con leche.","2. Alternar capas de galletas mojadas en leche y chocolate.","3. Dejar en la nevera 4 horas."] },
+  { n:"Sopa de cebolla", t:40, ing:["3 Cebollas grandes","50g Mantequilla","Caldo de carne","Pan","Queso"], pasos:["1. Pochar la cebolla muy despacio (30 min).","2. Añadir caldo y cocer 10 min.","3. Servir con pan tostado y queso gratinado."] },
+  { n:"Arroz negro", t:45, ing:["300g Arroz","200g Calamares","Tinta de calamar","Pimiento","Cebolla","Caldo"], pasos:["1. Pochar cebolla y pimiento.","2. Añadir calamares.","3. Echar arroz, tinta y caldo. Cocer 18 min."] },
+  { n:"Pollo a la cerveza", t:45, ing:["1 Pollo troceado","1 Cerveza","1 Cebolla","2 Ajos","Laurel"], pasos:["1. Dorar el pollo.","2. Añadir cebolla y ajo.","3. Verter la cerveza y el laurel.","4. Cocer 30 min."] },
+  { n:"Berenjenas rellenas de carne", t:50, ing:["2 Berenjenas","300g Carne picada","Tomate triturado","Queso rallado"], pasos:["1. Asar berenjenas (micro 8 min).","2. Sacar la pulpa y mezclar con carne y tomate.","3. Rellenar y cubrir con queso.","4. Gratinar 10 min."] },
+  { n:"Tortitas americanas", t:20, ing:["200g Harina","2 Huevos","250ml Leche","1 cda Azúcar","1 cdta Levadura"], pasos:["1. Mezclar ingredientes (no batir en exceso).","2. Cocinar en sartén antiadherente.","3. Servir con miel o sirope."] },
+  { n:"Salmón marinado", t:10, ing:["500g Salmón","Sal","Azúcar","Eneldo"], pasos:["1. Cubrir salmón con mezcla de sal y azúcar.","2. Dejar en nevera 24h.","3. Lavar, secar y cortar en lonchas."] },
+  { n:"Pisto con huevo escalfado", t:30, ing:["1 Pimiento","1 Calabacín","2 Tomates","1 Cebolla","4 Huevos"], pasos:["1. Hacer el pisto.","2. Escalfar los huevos en el pisto.","3. Servir caliente."] },
+  { n:"Tarta de limón", t:45, ing:["1 Masa quebrada","3 Limones","4 Huevos","150g Azúcar","Nata"], pasos:["1. Forrar el molde.","2. Batir huevos, azúcar y limón.","3. Hornear 180°C 30 min."] },
+  { n:"Garbanzos con chorizo", t:20, ing:["400g Garbanzos cocidos","1 Chorizo","1 Cebolla","Caldo"], pasos:["1. Pochar cebolla y chorizo.","2. Añadir garbanzos y caldo.","3. Cocer 10 min."] },
+  { n:"Albóndigas de pescado", t:30, ing:["400g Pescado","1 Huevo","1 Cebolla","Pan rallado","Harina"], pasos:["1. Mezclar pescado picado, huevo, cebolla y pan rallado.","2. Formar bolitas y enharinar.","3. Freír y servir con salsa verde."] },
+  { n:"Pollo kung pao", t:25, ing:["500g Pollo","Cacahuetes","1 Pimiento","Salsa de soja","Guindilla"], pasos:["1. Saltear pollo en dados.","2. Añadir pimiento y guindilla.","3. Echar soja y cacahuetes. Saltear 3 min."] },
+  { n:"Bizcocho de chocolate", t:40, ing:["3 Huevos","150g Azúcar","200g Harina","50g Cacao","100ml Leche","Aceite"], pasos:["1. Batir huevos y azúcar.","2. Añadir leche, aceite, harina y cacao.","3. Hornear 180°C 30 min."] },
+  { n:"Pimientos verdes fritos", t:15, ing:["4 Pimientos verdes","Aceite de oliva","Sal gorda"], pasos:["1. Cortar pimientos en tiras.","2. Freír en abundante aceite.","3. Escurrir y salar."] },
+  { n:"Revuelto de ajos y perejil", t:10, ing:["4 Huevos","3 Ajos","Perejil"], pasos:["1. Dorar ajos laminados.","2. Echar huevos batidos.","3. Remover y añadir perejil."] },
+  { n:"Merluza a la vasca", t:30, ing:["4 Lomos","Almejas","Gambas","Ajo","Perejil","Vino blanco"], pasos:["1. Abrir almejas con vino.","2. Echar merluza y gambas.","3. Cocer 8 min y echar perejil."] },
+  { n:"Sopa de tomate", t:30, ing:["1 kg Tomates","1 Cebolla","Ajo","Caldo","Nata"], pasos:["1. Pochar cebolla y ajo.","2. Añadir tomate y caldo. Cocer 20 min.","3. Triturar y añadir nata."] },
+  { n:"Pollo al limón (Airfryer)", t:30, ing:["4 Muslos","1 Limón","Tomillo","Aceite"], pasos:["1. Pincelar pollo con aceite y limón.","2. Airfryer 190°C 25 min."] },
+  { n:"Calabacines rellenos de atún", t:30, ing:["2 Calabacines","2 Latas de atún","Tomate frito","Cebolla","Queso"], pasos:["1. Partir calabacines y vaciar.","2. Mezclar pulpa con atún, cebolla y tomate.","3. Rellenar, cubrir con queso y hornear 20 min."] },
+  { n:"Tarta de manzana (Airfryer)", t:35, ing:["2 Manzanas","1 Masa","Azúcar","Canela"], pasos:["1. Forrar molde.","2. Poner manzanas laminadas.","3. Airfryer 160°C 25 min."] }
+]);
