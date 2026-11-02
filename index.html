@@ -1,1 +1,272 @@
-Hola
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi despensa</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:Arial,sans-serif; background:#f5f2ea; color:#222; padding-bottom:80px; }
+  header { background:#2e5c3e; color:#fff; padding:14px 16px; position:sticky; top:0; z-index:10; }
+  header h1 { margin:0; font-size:22px; }
+  header small { opacity:0.85; }
+  .tabs { display:flex; background:#2e5c3e; position:sticky; top:62px; z-index:9; }
+  .tab { flex:1; padding:12px; text-align:center; color:#cfe3d6; font-size:15px; cursor:pointer; border-bottom:3px solid transparent; }
+  .tab.activa { color:#fff; border-bottom-color:#ffd479; font-weight:bold; }
+  .panel { padding:14px; display:none; }
+  .panel.activa { display:block; }
+  .aviso { padding:10px 12px; border-radius:8px; margin-bottom:8px; font-size:15px; }
+  .aviso.rojo { background:#fdecea; border-left:4px solid #c62828; }
+  .aviso.ambar { background:#fff4e0; border-left:4px solid #e08a00; }
+  .item { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border-bottom:1px solid #eee; font-size:15px; background:#fff; margin-bottom:6px; border-radius:8px; }
+  .item .info { flex:1; }
+  .item .nombre { font-weight:bold; }
+  .item .detalle { font-size:13px; color:#666; }
+  .item .acciones { display:flex; gap:6px; }
+  button { font-family:inherit; border:none; border-radius:8px; padding:8px 12px; font-size:14px; cursor:pointer; }
+  .btn-primario { background:#2e5c3e; color:#fff; font-weight:bold; }
+  .btn-secundario { background:#ddd; color:#333; }
+  .btn-gastar { background:#e08a00; color:#fff; }
+  .btn-abrir { background:#2e7d32; color:#fff; }
+  .fab { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#2e5c3e; color:#fff; font-size:32px; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:20; }
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; align-items:flex-end; z-index:30; }
+  .modal.abierto { display:flex; }
+  .modal-caja { background:#fff; width:100%; border-radius:16px 16px 0 0; padding:16px; max-height:85vh; overflow-y:auto; }
+  .modal h3 { margin:0 0 12px; }
+  .campo { margin-bottom:12px; }
+  .campo label { display:block; font-size:14px; color:#444; margin-bottom:4px; }
+  .campo input, .campo select { width:100%; padding:12px; font-size:16px; border:1px solid #ccc; border-radius:8px; font-family:inherit; }
+  .sugerencias { background:#fff; border:1px solid #ccc; border-top:none; max-height:200px; overflow-y:auto; border-radius:0 0 8px 8px; position:absolute; width:calc(100% - 32px); z-index:10; }
+  .sugerencias div { padding:10px 12px; cursor:pointer; font-size:15px; border-bottom:1px solid #eee; }
+  .sugerencias div:hover { background:#f0f0e8; }
+  .vacio { text-align:center; color:#999; padding:30px 10px; font-size:15px; }
+  .receta { background:#fff; border-radius:12px; padding:14px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .receta h3 { margin:0 0 6px; font-size:16px; color:#2e5c3e; }
+  .receta .meta { font-size:13px; color:#666; margin-bottom:8px; }
+  .receta .ing { font-size:14px; margin:4px 0; }
+  .receta .ing .tiene { color:#2e7d32; }
+  .receta .ing .falta { color:#c67a00; }
+  .receta .pasos { font-size:14px; line-height:1.5; margin-top:8px; }
+  .receta .pasos li { margin-bottom:4px; }
+</style>
+</head>
+  <body>
+
+<header>
+  <h1>Mi despensa</h1>
+  <small id="fecha-hoy"></small>
+</header>
+
+<div id="avisos-globales" style="padding: 14px 14px 0 14px;"></div>
+
+<div class="tabs">
+  <div class="tab activa" data-tab="nevera">Nevera</div>
+  <div class="tab" data-tab="congelador">Congelador</div>
+  <div class="tab" data-tab="despensa">Despensa</div>
+  <div class="tab" data-tab="recetas">Recetas</div>
+</div>
+
+<div class="panel activa" id="panel-nevera"></div>
+<div class="panel" id="panel-congelador"></div>
+<div class="panel" id="panel-despensa"></div>
+<div class="panel" id="panel-recetas"></div>
+
+<div class="fab" id="fab-add">+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-caja">
+    <h3>Añadir producto</h3>
+    <div class="campo" style="position:relative;">
+      <label>Producto</label>
+      <input id="in-nombre" placeholder="Escribe para buscar…" autocomplete="off">
+      <div class="sugerencias" id="sugerencias" style="display:none"></div>
+    </div>
+    <div class="campo">
+      <label>Caduca el</label>
+      <input id="in-caduca" type="date">
+    </div>
+    <div class="campo">
+      <label>Ubicación</label>
+      <select id="in-ubi">
+        <option value="nevera">Nevera</option>
+        <option value="congelador">Congelador</option>
+        <option value="despensa">Despensa</option>
+      </select>
+    </div>
+    <div class="campo" id="campo-dias-abierto" style="display:none">
+      <label>Una vez abierto, consumir en (días)</label>
+      <input id="in-dias-abierto" type="number" min="1" placeholder="Ej: 4">
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px">
+      <button class="btn-secundario" id="btn-cancelar" style="flex:1">Cancelar</button>
+      <button class="btn-primario" id="btn-guardar" style="flex:2">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ALIMENTOS = [
+  { n:"Leche fresca", u:"nevera", a:4 }, { n:"Leche UHT", u:"despensa", a:4 },
+  { n:"Yogur natural", u:"nevera", a:3 }, { n:"Nata líquida", u:"nevera", a:3 },
+  { n:"Queso curado", u:"nevera", a:21 }, { n:"Queso fresco", u:"nevera", a:4 },
+  { n:"Mantequilla", u:"nevera", a:21 }, { n:"Pollo", u:"nevera", a:2 },
+  { n:"Ternera", u:"nevera", a:2 }, { n:"Cerdo", u:"nevera", a:2 },
+  { n:"Embutido loncheado", u:"nevera", a:4 }, { n:"Chorizo", u:"nevera", a:14 },
+  { n:"Jamón serrano", u:"nevera", a:21 }, { n:"Pescado fresco", u:"nevera", a:1 },
+  { n:"Gambas cocidas", u:"nevera", a:2 }, { n:"Atún en lata", u:"despensa", a:1 },
+  { n:"Huevos frescos", u:"nevera", a:14 }, { n:"Tomate", u:"nevera", a:5 },
+  { n:"Lechuga", u:"nevera", a:3 }, { n:"Cebolla", u:"despensa", a:21 },
+  { n:"Ajo", u:"despensa", a:60 }, { n:"Pimiento", u:"nevera", a:6 },
+  { n:"Zanahoria", u:"nevera", a:14 }, { n:"Patata", u:"despensa", a:14 },
+  { n:"Champiñones", u:"nevera", a:3 }, { n:"Calabacín", u:"nevera", a:6 },
+  { n:"Berenjena", u:"nevera", a:6 }, { n:"Manzana", u:"despensa", a:10 },
+  { n:"Plátano", u:"despensa", a:4 }, { n:"Arroz", u:"despensa", a:365 },
+  { n:"Pasta", u:"despensa", a:365 }, { n:"Legumbres secas", u:"despensa", a:365 },
+  { n:"Harina", u:"despensa", a:180 }, { n:"Pan", u:"despensa", a:3 },
+  { n:"Aceite de oliva", u:"despensa", a:180 }, { n:"Tomate triturado", u:"despensa", a:4 },
+  { n:"Salsa de tomate", u:"despensa", a:6 }, { n:"Mayonesa", u:"nevera", a:45 },
+  { n:"Caldo", u:"nevera", a:4 }, { n:"Carne congelada", u:"congelador", a:1 },
+  { n:"Pescado congelado", u:"congelador", a:1 }, { n:"Verdura congelada", u:"congelador", a:1 }
+];
+
+const RECETAS = [
+  { n:"Tortilla de patatas", t:30, ing:["Huevos frescos","Patata","Cebolla","Aceite de oliva","Sal"],
+    pasos:["Pelar y cortar las patatas en láminas finas.","Pochar patata y cebolla en aceite a fuego medio 15 min.","Batir los huevos y mezclar con la patata escurrida.","Cuajar en sartén 2 min por cada lado."] },
+  { n:"Pollo al champión con nata", t:30, ing:["Pollo","Champiñones","Nata líquida","Cebolla","Aceite de oliva","Sal"],
+    pasos:["Dorar el pollo troceado en aceite.","Añadir cebolla y champiñones laminados.","Verter la nata y cocer 10 min.","Salpimentar y servir."] },
+  { n:"Lentejas estofadas", t:60, ing:["Legumbres secas","Chorizo","Cebolla","Zanahoria","Ajo","Aceite de oliva","Sal"],
+    pasos:["Pochar cebolla, ajo y zanahoria.","Añadir chorizo y lentejas.","Cubrir con agua y cocer 45 min.","Rectificar de sal."] },
+  { n:"Arroz con pollo", t:45, ing:["Arroz","Pollo","Pimiento","Cebolla","Ajo","Aceite de oliva","Sal"],
+    pasos:["Sofreír pollo troceado.","Añadir pimiento, cebolla y ajo.","Incorporar arroz y agua (doble).","Cocer 18 min y reposar."] },
+  { n:"Pisto manchego", t:40, ing:["Tomate","Calabacín","Berenjena","Pimiento","Cebolla","Aceite de oliva","Sal"],
+    pasos:["Cortar todas las verduras en dados.","Pochar cebolla y pimiento.","Añadir calabacín y berenjena.","Incorporar tomate y cocer 20 min."] },
+  { n:"Crema de champiñones", t:25, ing:["Champiñones","Cebolla","Nata líquida","Caldo","Aceite de oliva","Sal"],
+    pasos:["Pochar cebolla y champiñones.","Añadir caldo y cocer 10 min.","Triturar y añadir nata.","Servir caliente."] }
+];
+let existencias = []; let siguienteId = 1; let seleccionActual = null;
+
+function cargar(){ try { const raw = localStorage.getItem('despensa_v1'); if (raw) { const d = JSON.parse(raw); existencias = d.existencias || []; siguienteId = d.siguienteId || 1; } } catch(e) { existencias = []; siguienteId = 1; } }
+function guardar(){ localStorage.setItem('despensa_v1', JSON.stringify({ existencias: existencias, siguienteId: siguienteId })); }
+function hoy(){ return new Date(); }
+function aFecha(s){ if (!s) return null; const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function diasHasta(fecha){ if (!fecha) return null; const f = aFecha(fecha); const h = hoy(); f.setHours(0,0,0,0); h.setHours(0,0,0,0); return Math.round((f - h) / (1000*60*60*24)); }
+function formatoFecha(s){ if (!s) return '—'; const f = aFecha(s); return f.toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' }); }
+function buscarAlimento(nombre){ return ALIMENTOS.find(a => a.n.toLowerCase() === nombre.toLowerCase()); }
+
+function renderTodo(){ ['nevera','congelador','despensa'].forEach(renderPanel); renderRecetas(); renderAvisos(); }
+
+function renderPanel(ubi){
+  const panel = document.getElementById('panel-' + ubi);
+  if (!panel) return;
+  const items = existencias.filter(e => e.ubicacion === ubi && !e.gastado);
+  if (items.length === 0){ panel.innerHTML = '<div class="vacio">No hay nada en ' + ubi + '.</div>'; return; }
+  items.sort((a,b) => { const da = diasHasta(a.caduca); const db = diasHasta(b.caduca); if (da === null) return 1; if (db === null) return -1; return da - db; });
+  let html = '';
+  items.forEach(e => {
+    const dias = diasHasta(e.caduca);
+    let clase = 'item'; if (dias !== null && dias < 0) clase += ' caducado'; else if (dias !== null && dias <= 2) clase += ' urgente';
+    html += '<div class="' + clase + '"><div class="info"><div class="nombre">' + e.nombre + (e.abierto ? ' · abierto' : '') + '</div><div class="detalle">Caduca: ' + formatoFecha(e.caduca) + (dias !== null ? ' · ' + (dias < 0 ? 'caducado' : (dias === 0 ? 'hoy' : dias + ' días')) : '') + '</div></div><div class="acciones">' + (e.abierto ? '' : '<button class="btn-abrir" onclick="abrirProducto(' + e.id + ')">Abrir</button>') + '<button class="btn-gastar" onclick="gastarProducto(' + e.id + ')">Gastar</button></div></div>';
+  });
+  panel.innerHTML = html;
+}
+
+function renderAvisos(){
+  const cont = document.getElementById('avisos-globales');
+  if (!cont) return;
+  const proximos = existencias.filter(e => !e.gastado && e.caduca).map(e => ({ e, dias: diasHasta(e.caduca) })).filter(x => x.dias !== null && x.dias <= 3).sort((a,b) => a.dias - b.dias);
+  if (proximos.length === 0){ cont.innerHTML = ''; return; }
+  let html = '';
+  proximos.forEach(x => {
+    const clase = x.dias < 0 ? 'rojo' : 'ambar';
+    const txt = x.dias < 0 ? 'Caducado' : (x.dias === 0 ? 'Caduca hoy' : 'Caduca en ' + x.dias + ' días');
+    html += '<div class="aviso ' + clase + '"><b>' + txt + '</b>' + x.e.nombre + '</div>';
+  });
+  cont.innerHTML = html;
+}
+
+function abrirProducto(id){
+  const e = existencias.find(x => x.id === id);
+  if (!e) return;
+  const alim = buscarAlimento(e.nombre);
+  const dias = alim && alim.a ? alim.a : (e.diasAbierto || 3);
+  const nueva = new Date(hoy().getTime() + dias * 24*60*60*1000);
+  const impresa = aFecha(e.caduca);
+  let final = nueva; if (impresa && impresa < nueva) final = impresa;
+  e.abierto = true; e.caduca = final.toISOString().slice(0,10);
+  guardar(); renderTodo();
+}
+
+function gastarProducto(id){
+  const e = existencias.find(x => x.id === id);
+  if (!e) return;
+  if (!confirm('¿Gastar ' + e.nombre + '?')) return;
+  e.gastado = true; guardar(); renderTodo();
+}
+
+function abrirModal(){
+  seleccionActual = null;
+  document.getElementById('in-nombre').value = ''; document.getElementById('in-caduca').value = '';
+  document.getElementById('in-ubi').value = 'nevera'; document.getElementById('campo-dias-abierto').style.display = 'none';
+  document.getElementById('in-dias-abierto').value = ''; document.getElementById('sugerencias').style.display = 'none';
+  document.getElementById('sugerencias').innerHTML = ''; document.getElementById('modal').classList.add('abierto');
+}
+
+function cerrarModal(){ document.getElementById('modal').classList.remove('abierto'); }
+
+function alEscribirNombre(){
+  const v = document.getElementById('in-nombre').value.trim().toLowerCase();
+  const cont = document.getElementById('sugerencias');
+  if (v.length < 2){ cont.style.display = 'none'; return; }
+  const matches = ALIMENTOS.filter(a => a.n.toLowerCase().includes(v)).slice(0, 8);
+  if (matches.length === 0){ cont.innerHTML = '<div onclick="elegirLibre()">Usar «' + document.getElementById('in-nombre').value + '» (nuevo)</div>'; cont.style.display = 'block'; return; }
+  cont.innerHTML = matches.map(a => '<div onclick="elegirAlimento(\'' + a.n.replace(/'/g, "\\'") + '\')">' + a.n + '</div>').join('');
+  cont.style.display = 'block';
+}
+
+function elegirAlimento(nombre){
+  document.getElementById('in-nombre').value = nombre; document.getElementById('sugerencias').style.display = 'none';
+  seleccionActual = buscarAlimento(nombre); if (seleccionActual){ document.getElementById('in-ubi').value = seleccionActual.u; }
+}
+
+function elegirLibre(){
+  seleccionActual = null; document.getElementById('sugerencias').style.display = 'none';
+  document.getElementById('campo-dias-abierto').style.display = 'block';
+}
+
+function guardarProducto(){
+  const nombre = document.getElementById('in-nombre').value.trim(); const caduca = document.getElementById('in-caduca').value;
+  const ubi = document.getElementById('in-ubi').value; const diasAbierto = parseInt(document.getElementById('in-dias-abierto').value) || null;
+  if (!nombre){ alert('Escribe un nombre'); return; } if (!caduca){ alert('Pon la fecha de caducidad'); return; }
+  existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false, diasAbierto: diasAbierto || null });
+  guardar(); cerrarModal(); renderTodo();
+}
+
+function renderRecetas(){
+  const panel = document.getElementById('panel-recetas'); if (!panel) return;
+  const abiertos = existencias.filter(e => !e.gastado).map(e => e.nombre.toLowerCase());
+  const proximos = existencias.filter(e => !e.gastado).filter(e => { const d = diasHasta(e.caduca); return d !== null && d <= 5; }).map(e => e.nombre.toLowerCase());
+  const sugeridas = RECETAS.map(r => {
+    const usa = r.ing.filter(i => abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)));
+    const deCaducan = r.ing.filter(i => proximos.some(p => p.includes(i.toLowerCase()) || i.toLowerCase().includes(p)));
+    return { r: r, usa: usa.length, deCaducan: deCaducan.length };
+  }).filter(x => x.usa >= 2).sort((a,b) => b.deCaducan - a.deCaducan || b.usa - a.usa).slice(0, 8);
+  
+  if (sugeridas.length === 0){ panel.innerHTML = '<div class="vacio">Añade productos a la despensa para ver recetas.</div>'; return; }
+  let html = '<h2 style="margin:0 0 10px;color:#2e5c3e">Sugerencias con lo que tienes</h2>';
+  sugeridas.forEach(x => {
+    html += '<div class="receta"><h3>' + x.r.n + '</h3><div class="meta">' + x.r.t + ' min · usa ' + x.usa + ' de tus ingredientes' + (x.deCaducan > 0 ? ' · <b style="color:#c62828">' + x.deCaducan + ' caducan pronto</b>' : '') + '</div><div class="ing">' + x.r.ing.map(i => { const tiene = abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)); return '<span class="' + (tiene ? 'tiene' : 'falta') + '">' + (tiene ? '✓ ' : '· ') + i + '</span>'; }).join(' · ') + '</div><ol class="pasos">' + x.r.pasos.map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
+  });
+  panel.innerHTML = html;
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('fecha-hoy').textContent = hoy().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.querySelectorAll('.tab').forEach(t => { t.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa')); document.querySelectorAll('.panel').forEach(x => x.classList.remove('activa')); t.classList.add('activa'); document.getElementById('panel-' + t.dataset.tab).classList.add('activa'); }); });
+  document.getElementById('fab-add').addEventListener('click', abrirModal); document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
+  document.getElementById('btn-guardar').addEventListener('click', guardarProducto); document.getElementById('in-nombre').addEventListener('input', alEscribirNombre);
+  cargar(); renderTodo();
+});
+</script>
+</body>
+</html>
+
