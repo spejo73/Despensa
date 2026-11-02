@@ -103,3 +103,120 @@ function guardarProducto(){
   existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false });
   guardar(); cerrarModal(); renderTodo();
 }
+function renderRecetas(){
+  const panel = document.getElementById('panel-recetas'); if (!panel) return;
+  const abiertos = existencias.filter(e => !e.gastado).map(e => e.nombre.toLowerCase());
+  const proximos = existencias.filter(e => !e.gastado).filter(e => { const d = diasHasta(e.caduca); return d !== null && d <= 5; }).map(e => e.nombre.toLowerCase());
+  const todas = RECETAS.map(r => {
+    const usa = r.ing.filter(i => abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)));
+    const deCaducan = r.ing.filter(i => proximos.some(p => p.includes(i.toLowerCase()) || i.toLowerCase().includes(p)));
+    return { r: r, usa: usa.length, deCaducan: deCaducan.length };
+  }).sort((a,b) => b.deCaducan - a.deCaducan || b.usa - a.usa || a.r.n.localeCompare(b.r.n));
+
+  let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Recetario</h2>';
+  html += '<input type="text" id="buscador-receta" class="buscador" placeholder="🔍 Buscar receta..." onkeyup="filtrarRecetas(this.value)">';
+  html += '<div id="lista-recetas">';
+  todas.forEach(x => {
+    let badge = x.deCaducan > 0 ? '<b style="color:#c62828; font-size:12px;">(¡Gastar pronto!)</b>' : (x.usa >= 2 ? '<b style="color:#2e7d32; font-size:12px;">(Puedes hacerlo)</b>' : '');
+    html += '<div class="receta" data-nombre="' + x.r.n.toLowerCase() + '"><h3>' + x.r.n + ' ' + badge + '</h3><div class="meta">⏱ ' + x.r.t + ' min · tienes ' + x.usa + ' de ' + x.r.ing.length + ' ing.</div><div class="ing">' + x.r.ing.map(i => { const tiene = abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)); return '<span class="' + (tiene ? 'tiene' : 'falta') + '">' + (tiene ? '✓ ' : '· ') + i + '</span>'; }).join(' · ') + '</div><ol class="pasos">' + x.r.pasos.map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
+  });
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+function renderTrucos(){
+  const panel = document.getElementById('panel-trucos'); if (!panel) return;
+  let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Trucos de Cocina</h2>';
+  html += '<input type="text" id="buscador-trucos" class="buscador" placeholder="🔍 Buscar truco..." onkeyup="filtrarTrucos(this.value)">';
+  html += '<div id="lista-trucos">';
+  TRUCOS.forEach(t => {
+    html += '<div class="receta" data-nombre="' + (t.t + " " + t.c).toLowerCase() + '"><h3 style="font-size:16px;">' + t.t + '</h3><div class="meta">' + t.c + '</div><div class="pasos" style="padding-left:0; margin-top:4px;">' + t.d + '</div></div>';
+  });
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+function filtrarRecetas(texto) { const filtro = texto.toLowerCase(); document.querySelectorAll('#lista-recetas .receta').forEach(r => { r.style.display = r.getAttribute('data-nombre').includes(filtro) ? 'block' : 'none'; }); }
+function filtrarTrucos(texto) { const filtro = texto.toLowerCase(); document.querySelectorAll('#lista-trucos .receta').forEach(r => { r.style.display = r.getAttribute('data-nombre').includes(filtro) ? 'block' : 'none'; }); }
+
+function extraerFechaInteligente(texto) {
+  let t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const meses = {"ene":"01","feb":"02","mar":"03","abr":"04","may":"05","jun":"06","jul":"07","ago":"08","sep":"09","oct":"10","nov":"11","dic":"12"};
+  for (let m in meses) { t = t.replace(new RegExp(m + "[a-z]*", "g"), meses[m]); }
+  let d=null, m=null, a=null;
+  let match = t.match(/(20\d{2})[\/\-\.\s](\d{1,2})[\/\-\.\s](\d{1,2})/);
+  if (match) { a = match[1]; m = match[2].padStart(2,'0'); d = match[3].padStart(2,'0'); }
+  if (!a) {
+    match = t.match(/(\d{1,2})[\/\-\.\s](\d{1,2})[\/\-\.\s](20\d{2}|\d{2})/);
+    if (match) { d = match[1].padStart(2,'0'); m = match[2].padStart(2,'0'); a = match[3]; }
+  }
+  if (a && a.length === 2) a = "20" + a;
+  if (d && m && a && parseInt(d) <= 31 && parseInt(m) <= 12) return a + "-" + m + "-" + d;
+  return null;
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('fecha-hoy').textContent = hoy().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.querySelectorAll('.tab').forEach(t => { t.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa')); document.querySelectorAll('.panel').forEach(x => x.classList.remove('activa')); t.classList.add('activa'); document.getElementById('panel-' + t.dataset.tab).classList.add('activa'); }); });
+  
+  document.getElementById('fab-add').addEventListener('click', abrirModal); 
+  document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
+  document.getElementById('btn-guardar').addEventListener('click', guardarProducto); 
+  document.getElementById('in-nombre').addEventListener('input', alEscribirNombre);
+
+  function configurarMicro(btnId, targetInputId, esFecha) {
+    document.getElementById(btnId).addEventListener('click', function(){
+      if (!('webkitSpeechRecognition' in window)) { alert('Tu móvil no soporta dictado por voz.'); return; }
+      const rec = new webkitSpeechRecognition(); rec.lang = 'es-ES'; rec.interimResults = false; rec.maxAlternatives = 1;
+      rec.onstart = () => { this.textContent = '🔴'; this.style.background = '#ffcccc'; };
+      rec.onresult = (e) => { 
+        let txt = e.results[0][0].transcript;
+        if (esFecha) {
+          let f = extraerFechaInteligente(txt);
+          if(f) document.getElementById(targetInputId).value = f;
+          else alert("No entendí la fecha. Prueba a decir: 'doce de noviembre de 2024'.");
+        } else { document.getElementById(targetInputId).value = txt; alEscribirNombre(); }
+      };
+      rec.onend = () => { this.textContent = '🎤'; this.style.background = '#f0f0f0'; };
+      rec.start();
+    });
+  }
+  configurarMicro('btn-micro-nombre', 'in-nombre', false); configurarMicro('btn-micro-fecha', 'in-caduca', true);
+
+  function configurarCamara(btnId, inputFileId, esFecha) {
+    document.getElementById(btnId).addEventListener('click', () => { document.getElementById(inputFileId).click(); });
+    document.getElementById(inputFileId).addEventListener('change', function(e){
+      if (!e.target.files.length) return;
+      const file = e.target.files[0]; const estado = document.getElementById('ocr-estado');
+      estado.style.display = 'block'; estado.textContent = '⏳ Analizando imagen...'; estado.style.color = '#3e5c42';
+      Tesseract.recognize(file, 'spa').then(({ data: { text } }) => {
+        const fechaEncontrada = extraerFechaInteligente(text);
+        if (esFecha) {
+          if (fechaEncontrada) { document.getElementById('in-caduca').value = fechaEncontrada; estado.textContent = '✅ Fecha detectada: ' + fechaEncontrada.split('-').reverse().join('/'); estado.style.color = '#2e7d32'; } 
+          else { estado.textContent = '⚠️ No se ve bien la fecha.'; estado.style.color = '#c62828'; }
+        } else {
+          let lineas = text.split('\n').filter(l => l.trim().length > 2);
+          if (lineas.length > 0) {
+            let nombreDetectado = lineas[0].trim(); document.getElementById('in-nombre').value = nombreDetectado; alEscribirNombre(); 
+            estado.textContent = '✅ Texto leído: ' + nombreDetectado; estado.style.color = '#2e7d32';
+            if (fechaEncontrada) document.getElementById('in-caduca').value = fechaEncontrada;
+          } else { estado.textContent = '⚠️ No se ha leído texto claro.'; estado.style.color = '#c62828'; }
+        }
+      }).catch(err => { estado.textContent = '❌ Error al procesar la imagen.'; estado.style.color = '#c62828'; });
+    });
+  }
+  configurarCamara('btn-camara-nombre', 'in-foto-nombre', false); configurarCamara('btn-camara-fecha', 'in-foto-fecha', true);
+
+  document.getElementById('btn-backup').addEventListener('click', function(){
+    const data = localStorage.getItem('despensa_v1');
+    if(!data || data === '{"existencias":[],"siguienteId":1}') { alert("La despensa está vacía."); return; }
+    prompt("Copia este texto y guárdalo:", data);
+  });
+  document.getElementById('btn-restore').addEventListener('click', function(){
+    const data = prompt("Pega aquí la copia de seguridad:");
+    if(data){ try { JSON.parse(data); localStorage.setItem('despensa_v1', data); alert("¡Copia cargada!"); location.reload(); } catch(e) { alert("El texto no es válido."); } }
+  });
+  
+  cargar(); 
+  renderTodo();
+});
