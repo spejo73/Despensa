@@ -53,7 +53,9 @@
     <button id="btn-restore" style="flex:1; background:#8fa894; color:#fff; font-size:12px; padding:6px; border-radius:8px;">📥 Restaurar</button>
   </div>
 </header>
+
 <div id="avisos-globales" style="padding: 12px 12px 0 12px;"></div>
+
 <div class="tabs">
   <div class="tab activa" data-tab="nevera"><span class="icono">🧊</span>Nevera</div>
   <div class="tab" data-tab="congelador"><span class="icono">❄️</span>Congelador</div>
@@ -61,12 +63,15 @@
   <div class="tab" data-tab="recetas"><span class="icono">🍳</span>Recetas</div>
   <div class="tab" data-tab="trucos"><span class="icono">💡</span>Trucos</div>
 </div>
+
 <div class="panel activa" id="panel-nevera"></div>
 <div class="panel" id="panel-congelador"></div>
 <div class="panel" id="panel-despensa"></div>
 <div class="panel" id="panel-recetas"></div>
 <div class="panel" id="panel-trucos"></div>
+
 <div class="fab" id="fab-add">+</div>
+
 <div class="modal" id="modal">
   <div class="modal-caja">
     <h3>Añadir producto</h3>
@@ -81,6 +86,7 @@
       <div id="sugerencias" style="background:#fff; border:1px solid #ccc; position:absolute; width:100%; z-index:10; display:none; max-height:150px; overflow-y:auto;"></div>
       <div id="ocr-estado" style="font-size:12px; color:#3e5c42; margin-top:4px; display:none; font-weight:bold;"></div>
     </div>
+    
     <div class="campo">
       <label>Caduca el (opcional)</label>
       <div class="fila">
@@ -90,16 +96,23 @@
       </div>
       <input type="file" id="in-foto-fecha" accept="image/*" capture="environment" style="display:none">
     </div>
+    
     <div class="campo">
       <label>Ubicación</label>
-      <select id="in-ubi"><option value="nevera">Nevera</option><option value="congelador">Congelador</option><option value="despensa">Despensa</option></select>
+      <select id="in-ubi">
+        <option value="nevera">Nevera</option>
+        <option value="congelador">Congelador</option>
+        <option value="despensa">Despensa</option>
+      </select>
     </div>
+    
     <div style="display:flex; gap:8px; margin-top:16px;">
       <button class="btn-abrir" id="btn-cancelar" style="flex:1; background:#ccc; color:#333;">Cancelar</button>
       <button class="btn-abrir" id="btn-guardar" style="flex:2; background:#3e5c42;">Guardar Producto</button>
     </div>
   </div>
 </div>
+
 <script>
 const ALIMENTOS = [
   { n:"Leche fresca", u:"nevera", a:4, dias:5, c:false }, { n:"Leche UHT", u:"despensa", a:4, dias:90, c:false },
@@ -450,64 +463,67 @@ RECETAS = RECETAS.concat([
   { n:"Tortilla de champiñones", t:15, ing:["4 Huevos","200g Champiñones","1 Cebolla pequeña","Aceite"], pasos:["1. Picar y saltear la cebolla y los champiñones.","2. Batir los huevos con sal y mezclar.","3. Cuajar en la sartén a fuego medio."] },
   { n:"Ensalada César", t:20, ing:["1 Lechuga","2 Pechugas de pollo","Queso parmesano","Picatostes","Salsa César"], pasos:["1. Hacer el pollo a la plancha y cortarlo en tiras.","2. Lavar y trocear la lechuga.","3. Mezclar lechuga, pollo, picatostes y queso.","4. Aliñar con la salsa César."] },
   { n:"Lubina al horno con verduras", t:30, ing:["1 Lubina entera","1 Patata","1 Cebolla","1 Pimiento","Aceite de oliva","Limón"], pasos:["1. Cortar las verduras en rodajas y poner en la bandeja.","2. Colocar la lubina encima y sazonar.","3. Echar aceite y limón. Hornear a 200°C 20 min."] },
-{ n:"Estofado de ternera con setas", t:90, ing:["600g Ternera","200g Setas","1 Cebolla","1 Zanahoria","Caldo","Vino tinto"], pasos:["1. Dorar la carne troceada.","2. Pochar cebolla y zanahoria.","3. Añadir setas, vino y caldo.","4. Cocer a fuego lento 1 hora y media."] },
+  { n:"Estofado de ternera con setas", t:90, ing:["600g Ternera","200g Setas","1 Cebolla","1 Zanahoria","Caldo","Vino tinto"], pasos:["1. Dorar la carne troceada.","2. Pochar cebolla y zanahoria.","3. Añadir setas, vino y caldo.","4. Cocer a fuego lento 1 hora y media."] },
   { n:"Arroz a la cubana", t:25, ing:["300g Arroz","2 Huevos","1 Plátano","400g Tomate triturado","Ajo"], pasos:["1. Cocer el arroz blanco.","2. Hacer una salsa de tomate con ajo.","3. Freír los huevos y el plátano en rodajas.","4. Servir el arroz con la salsa, el huevo y el plátano."] },
   { n:"Sopa de picadillo", t:15, ing:["1 Litro de caldo","50g Jamón","1 Huevo cocido","Picatostes"], pasos:["1. Calentar el caldo.","2. Picar el jamón y el huevo muy finos.","3. Añadir a la sopa y servir con picatostes."] },
   { n:"Pimientos del piquillo rellenos de bacalao", t:40, ing:["1 Lata de pimientos del piquillo","300g Bacalao desmigado","1 Cebolla","2 cdas Harina","200ml Leche"], pasos:["1. Pochar cebolla y añadir el bacalao.","2. Hacer una bechamel con la leche y la harina, mezclar.","3. Rellenar los pimientos.","4. Cubrir con salsa de tomate y calentar."] },
-{ n:"Chuletillas de cordero a la plancha", t:15, ing:["8 Chuletillas de cordero","Ajo","Perejil","Aceite de oliva","Sal gorda"], pasos:["1. Calentar la plancha a fuego fuerte.","2. Echar las chuletillas y salarlas.","3. Dar la vuelta a los 2 minutos.","4. Servir con ajo y perejil picado."] },
+  { n:"Chuletillas de cordero a la plancha", t:15, ing:["8 Chuletillas de cordero","Ajo","Perejil","Aceite de oliva","Sal gorda"], pasos:["1. Calentar la plancha a fuego fuerte.","2. Echar las chuletillas y salarlas.","3. Dar la vuelta a los 2 minutos.","4. Servir con ajo y perejil picado."] },
   { n:"Salmón a la plancha con verduras", t:20, ing:["2 Lomos de salmón","1 Calabacín","1 Pimiento","Aceite de oliva","Sal"], pasos:["1. Hacer el salmón a la plancha 3 min por cada lado.","2. Saltear las verduras en tiras.","3. Servir el salmón con las verduras."] },
   { n:"Macarrones con atún", t:25, ing:["250g Macarrones","2 Latas de atún","400g Tomate triturado","1 Cebolla"], pasos:["1. Cocer la pasta.","2. Pochar cebolla y añadir tomate y atún.","3. Cocer 5 min y mezclar con la pasta."] },
   { n:"Pollo a la mostaza", t:30, ing:["4 Muslos de pollo","2 cdas Mostaza","200ml Nata","1 Cebolla","Caldo"], pasos:["1. Dorar el pollo.","2. Pochar cebolla y añadir la mostaza.","3. Echar nata y un poco de caldo.","4. Cocer 15 min con el pollo."] },
   { n:"Merluza con almejas", t:25, ing:["4 Lomos de merluza","200g Almejas","2 Ajos","Perejil","Vino blanco","Harina"], pasos:["1. Dorar ajos en una sartén.","2. Añadir harina y vino blanco.","3. Echar las almejas y la merluza.","4. Cocer 10 min hasta que se abran las almejas."] },
-{ n:"Ensalada de pasta", t:20, ing:["250g Pasta","1 Tomate","1 Lata de atún","Aceitunas","Maíz","Aceite y vinagre"], pasos:["1. Cocer la pasta y enfriar.","2. Picar el tomate.","3. Mezclar pasta, tomate, atún, aceitunas y maíz.","4. Aliñar al gusto."] },
+  { n:"Ensalada de pasta", t:20, ing:["250g Pasta","1 Tomate","1 Lata de atún","Aceitunas","Maíz","Aceite y vinagre"], pasos:["1. Cocer la pasta y enfriar.","2. Picar el tomate.","3. Mezclar pasta, tomate, atún, aceitunas y maíz.","4. Aliñar al gusto."] },
   { n:"Tortilla de jamón y queso", t:10, ing:["4 Huevos","100g Jamón cocido","100g Queso rallado"], pasos:["1. Batir los huevos.","2. Echar en la sartén, añadir jamón y queso.","3. Doblar la tortilla y servir."] },
   { n:"Caldo de pescado", t:40, ing:["Espinas de pescado","1 Cebolla","1 Zanahoria","1 Puerro","Agua"], pasos:["1. Pochar las verduras.","2. Añadir las espinas y cubrir con agua.","3. Cocer 30 min.","4. Colar y guardar."] },
   { n:"Arroz con bogavante", t:50, ing:["300g Arroz","1 Bogavante","1 Tomate","1 Pimiento","Caldo de pescado","Azafrán"], pasos:["1. Dorar el bogavante y reservar.","2. Hacer un sofrito de verduras.","3. Echar arroz y caldo.","4. Poner el bogavante encima y cocer 18 min."] },
   { n:"Pollo al horno con limón y miel", t:45, ing:["4 Cuartos de pollo","2 Limones","2 cdas Miel","Salsa de soja","Ajo"], pasos:["1. Mezclar zumo de limón, miel, soja y ajo.","2. Pintar el pollo y dejar marinar.","3. Hornear a 200°C 40 min."] },
-{ n:"Sopa de lentejas", t:40, ing:["200g Lentejas","1 Patata","1 Zanahoria","1 Cebolla","Caldo"], pasos:["1. Pochar cebolla y zanahoria.","2. Añadir patata, lentejas y caldo.","3. Cocer 30 min hasta que estén tiernas."] },
+  { n:"Sopa de lentejas", t:40, ing:["200g Lentejas","1 Patata","1 Zanahoria","1 Cebolla","Caldo"], pasos:["1. Pochar cebolla y zanahoria.","2. Añadir patata, lentejas y caldo.","3. Cocer 30 min hasta que estén tiernas."] },
   { n:"Revuelto de setas y ajos tiernos", t:15, ing:["4 Huevos","200g Setas","1 manojo de Ajos tiernos","Aceite"], pasos:["1. Saltear los ajos tiernos y las setas.","2. Añadir los huevos batidos.","3. Remover hasta cuajar."] },
   { n:"Pulpo a la gallega", t:60, ing:["1 Pulpo","4 Patatas","Pimentón","Sal gorda","Aceite de oliva"], pasos:["1. Cocer el pulpo (truco: asustarlo 3 veces).","2. Cocer las patatas en el mismo agua.","3. Cortar patatas y pulpo en rodajas.","4. Echar aceite, sal y pimentón."] },
-  { n:"Pollo en pepitoria", t:60, ing:["1 Pollo troceado","1 Cebolla","2 Ajos","1 Yema de huevo","Almendras","Vino blanco"], pasos:["1. Dorar el pollo.","2. Pochar cebolla y ajo.","3. Añadir vino y caldo, cocer 30 min.","4. Triturar yema, almendras y añadir al final."] },
+  { n:"Pollo en pepitoria", t:60, ing:["1 Pollo troceado","1 Cebolla","2 Ajos","1 Yema de huevo","Almendras","Vino blanco"], pasos:["1. Dorar el pollo.","2. Pochar cebolla y ajo.","3. Añadir vino y caldo, cocer 30 min.","4. Triturar yema, almendras y añadir al final."] }
+]);
+RECETAS = RECETAS.concat([
   { n:"Trucha a la navarra", t:20, ing:["2 Truchas","4 Lonchas de jamón serrano","Harina","Aceite"], pasos:["1. Limpiar truchas y meter jamón dentro.","2. Pasar por harina.","3. Freír en aceite caliente 4 min por lado."] },
   { n:"Ensalada de tomate y mozzarella", t:10, ing:["2 Tomates grandes","1 Bola de mozzarella","Albahaca","Aceite de oliva","Sal"], pasos:["1. Cortar tomate y mozzarella en rodajas.","2. Alternar en un plato.","3. Aliñar con albahaca, aceite y sal."] },
-{ n:"Huevos a la flamenca", t:25, ing:["4 Huevos","200g Guisantes","Tomate triturado","1 Cebolla","Jamón"], pasos:["1. Hacer una salsa con cebolla y tomate.","2. Añadir guisantes y jamón.","3. Escalfar los huevos en la salsa."] },
+  { n:"Huevos a la flamenca", t:25, ing:["4 Huevos","200g Guisantes","Tomate triturado","1 Cebolla","Jamón"], pasos:["1. Hacer una salsa con cebolla y tomate.","2. Añadir guisantes y jamón.","3. Escalfar los huevos en la salsa."] },
   { n:"Lomo de salmón al horno", t:20, ing:["4 Lomos de salmón","1 Limón","Eneldo","Aceite de oliva"], pasos:["1. Poner el salmón en bandeja.","2. Echar limón, eneldo y aceite.","3. Hornear a 180°C 12 min."] },
   { n:"Crema de zanahoria y jengibre", t:30, ing:["4 Zanahorias","1 Patata","1 Cebolla","Jengibre","Caldo"], pasos:["1. Pochar cebolla, zanahoria y jengibre.","2. Cubrir con caldo y cocer 20 min.","3. Triturar."] },
   { n:"Pechugas de pollo rellenas", t:35, ing:["2 Pechugas","100g Queso","4 Lonchas de jamón","Pan rallado"], pasos:["1. Abrir pechugas y rellenar con queso y jamón.","2. Cerrar con palillos y empanar.","3. Hornear a 200°C 20 min."] },
   { n:"Tarta de galletas y chocolate", t:20, ing:["1 Paquete de galletas","200g Chocolate","500ml Leche","Mantequilla"], pasos:["1. Derretir chocolate con leche.","2. Alternar capas de galletas mojadas en leche y chocolate.","3. Dejar en la nevera 4 horas."] },
   { n:"Sopa de cebolla", t:40, ing:["3 Cebollas grandes","50g Mantequilla","Caldo de carne","Pan","Queso"], pasos:["1. Pochar la cebolla muy despacio (30 min).","2. Añadir caldo y cocer 10 min.","3. Servir con pan tostado y queso gratinado."] },
   { n:"Arroz negro", t:45, ing:["300g Arroz","200g Calamares","Tinta de calamar","Pimiento","Cebolla","Caldo"], pasos:["1. Pochar cebolla y pimiento.","2. Añadir calamares.","3. Echar arroz, tinta y caldo. Cocer 18 min."] },
-{ n:"Pollo a la cerveza", t:45, ing:["1 Pollo troceado","1 Cerveza","1 Cebolla","2 Ajos","Laurel"], pasos:["1. Dorar el pollo.","2. Añadir cebolla y ajo.","3. Verter la cerveza y el laurel.","4. Cocer 30 min."] },
+  { n:"Pollo a la cerveza", t:45, ing:["1 Pollo troceado","1 Cerveza","1 Cebolla","2 Ajos","Laurel"], pasos:["1. Dorar el pollo.","2. Añadir cebolla y ajo.","3. Verter la cerveza y el laurel.","4. Cocer 30 min."] },
   { n:"Berenjenas rellenas de carne", t:50, ing:["2 Berenjenas","300g Carne picada","Tomate triturado","Queso rallado"], pasos:["1. Asar berenjenas (micro 8 min).","2. Sacar la pulpa y mezclar con carne y tomate.","3. Rellenar y cubrir con queso.","4. Gratinar 10 min."] },
   { n:"Tortitas americanas", t:20, ing:["200g Harina","2 Huevos","250ml Leche","1 cda Azúcar","1 cdta Levadura"], pasos:["1. Mezclar ingredientes (no batir en exceso).","2. Cocinar en sartén antiadherente.","3. Servir con miel o sirope."] },
   { n:"Salmón marinado", t:10, ing:["500g Salmón","Sal","Azúcar","Eneldo"], pasos:["1. Cubrir salmón con mezcla de sal y azúcar.","2. Dejar en nevera 24h.","3. Lavar, secar y cortar en lonchas."] },
   { n:"Pisto con huevo escalfado", t:30, ing:["1 Pimiento","1 Calabacín","2 Tomates","1 Cebolla","4 Huevos"], pasos:["1. Hacer el pisto.","2. Escalfar los huevos en el pisto.","3. Servir caliente."] },
   { n:"Tarta de limón", t:45, ing:["1 Masa quebrada","3 Limones","4 Huevos","150g Azúcar","Nata"], pasos:["1. Forrar el molde.","2. Batir huevos, azúcar y limón.","3. Hornear 180°C 30 min."] },
   { n:"Garbanzos con chorizo", t:20, ing:["400g Garbanzos cocidos","1 Chorizo","1 Cebolla","Caldo"], pasos:["1. Pochar cebolla y chorizo.","2. Añadir garbanzos y caldo.","3. Cocer 10 min."] },
-{ n:"Albóndigas de pescado", t:30, ing:["400g Pescado","1 Huevo","1 Cebolla","Pan rallado","Harina"], pasos:["1. Mezclar pescado picado, huevo, cebolla y pan rallado.","2. Formar bolitas y enharinar.","3. Freír y servir con salsa verde."] },
+  { n:"Albóndigas de pescado", t:30, ing:["400g Pescado","1 Huevo","1 Cebolla","Pan rallado","Harina"], pasos:["1. Mezclar pescado picado, huevo, cebolla y pan rallado.","2. Formar bolitas y enharinar.","3. Freír y servir con salsa verde."] },
   { n:"Pollo kung pao", t:25, ing:["500g Pollo","Cacahuetes","1 Pimiento","Salsa de soja","Guindilla"], pasos:["1. Saltear pollo en dados.","2. Añadir pimiento y guindilla.","3. Echar soja y cacahuetes. Saltear 3 min."] },
   { n:"Bizcocho de chocolate", t:40, ing:["3 Huevos","150g Azúcar","200g Harina","50g Cacao","100ml Leche","Aceite"], pasos:["1. Batir huevos y azúcar.","2. Añadir leche, aceite, harina y cacao.","3. Hornear 180°C 30 min."] },
   { n:"Pimientos verdes fritos", t:15, ing:["4 Pimientos verdes","Aceite de oliva","Sal gorda"], pasos:["1. Cortar pimientos en tiras.","2. Freír en abundante aceite.","3. Escurrir y salar."] },
   { n:"Revuelto de ajos y perejil", t:10, ing:["4 Huevos","3 Ajos","Perejil"], pasos:["1. Dorar ajos laminados.","2. Echar huevos batidos.","3. Remover y añadir perejil."] },
   { n:"Merluza a la vasca", t:30, ing:["4 Lomos","Almejas","Gambas","Ajo","Perejil","Vino blanco"], pasos:["1. Abrir almejas con vino.","2. Echar merluza y gambas.","3. Cocer 8 min y echar perejil."] },
   { n:"Sopa de tomate", t:30, ing:["1 kg Tomates","1 Cebolla","Ajo","Caldo","Nata"], pasos:["1. Pochar cebolla y ajo.","2. Añadir tomate y caldo. Cocer 20 min.","3. Triturar y añadir nata."] },
- { n:"Pollo al limón (Airfryer)", t:30, ing:["4 Muslos","1 Limón","Tomillo","Aceite"], pasos:["1. Pincelar pollo con aceite y limón.","2. Airfryer 190°C 25 min."] },
-  { n:"Calabacines rellenos de atún", t:30, ing:["2 Calabacines","2 Latas de atún","Tomate frito","Cebolla","Queso"], pasos:["1. Partir calabacines y vaciar.","2. Mezclar pulpa con atún, cebolla y tomate.","3. Rellenar, cubrir con queso y hornear 20 min."] },
+  { n:"Pollo al limón (Airfryer)", t:30, ing:["4 Muslos","1 Limón","Tomillo","Aceite"], pasos:["1. Pincelar pollo con aceite y limón.","2. Airfryer 190°C 25 min."] },
+  { n:"Calabacines rellenos de atún", t:30, ing:["2 Calabacines","2 Latas de atún","Tomate frito","Cebolla","Queso"], pasos:["1. Partir calabacines y vaciar.","2. Mezclar pulpa con atún, cebolla y tomate.","3. Rellenar, cubrir con queso y hornear 20 min."] }
+]);
+RECETAS = RECETAS.concat([
   { n:"Tarta de manzana (Airfryer)", t:35, ing:["2 Manzanas","1 Masa","Azúcar","Canela"], pasos:["1. Forrar molde.","2. Poner manzanas laminadas.","3. Airfryer 160°C 25 min."] },
   { n:"Patatas bravas (Airfryer)", t:30, ing:["3 Patatas","Tomate frito","Mayonesa","Pimentón"], pasos:["1. Patatas en dados a la Airfryer 180°C 20 min.","2. Mezclar tomate, mayonesa y pimentón.","3. Servir con salsa."] },
   { n:"Pollo al ajillo (Thermomix)", t:30, ing:["1 Pollo troceado","6 Ajos","Vino blanco","Aceite"], pasos:["1. Dorar ajos 5 min/Varoma/vel 1.","2. Añadir pollo y vino. Cocer 20 min/Varoma/giro izq/vel cuchara."] },
   { n:"Arroz caldoso (Thermomix)", t:30, ing:["200g Arroz","500ml Caldo","1 Cebolla","1 Zanahoria"], pasos:["1. Pochar verduras 5 min/Varoma/vel 1.","2. Añadir arroz y caldo. Cocer 15 min/100°C/giro izq/vel cuchara."] },
   { n:"Sopa de pescado (Thermomix)", t:40, ing:["Espinas de pescado","Cebolla","Zanahoria","Agua"], pasos:["1. Pochar verduras.","2. Añadir espinas y agua. Cocer 30 min/Varoma/vel 1.","3. Colar."] },
   { n:"Tortilla de patatas (Thermomix)", t:40, ing:["4 Huevos","3 Patatas","1 Cebolla","Aceite"], pasos:["1. Picar patata y cebolla 5 seg/vel 4.","2. Freír en sartén.","3. Mezclar con huevo y cuajar."] },
-{ n:"Pisto (Thermomix)", t:30, ing:["1 Calabacín","1 Pimiento","1 Cebolla","2 Tomates"], pasos:["1. Trocear verduras 5 seg/vel 5.","2. Sofreír 15 min/Varoma/vel 1."] },
-  { n:"Lentejas (Airfryer)", t:50, ing:["200g Lentejas cocidas","1 Chorizo","1 Patata","Caldo"], pasos:["1. Poner todo en un recipiente apto para Airfryer.","2. Cocinar 180°C 25 min.","3. Remover y servir."] },
+  { n:"Pisto (Thermomix)", t:30, ing:["1 Calabacín","1 Pimiento","1 Cebolla","2 Tomates"], pasos:["1. Trocear verduras 5 seg/vel 5.","2. Sofreír 15 min/Varoma/vel 1."] },
   { n:"Salmón al horno con verduras", t:25, ing:["2 Lomos de salmón","1 Calabacín","1 Pimiento","Aceite de oliva"], pasos:["1. Poner verduras en la bandeja.","2. Salmón encima y aliñar.","3. Hornear 200°C 15 min."] },
   { n:"Pollo a la plancha con limón", t:15, ing:["2 Pechugas","1 Limón","Orégano","Aceite"], pasos:["1. Filetear pechugas.","2. Hacer a la plancha.","3. Echar limón y orégano."] },
   { n:"Ensalada de garbanzos y atún", t:10, ing:["400g Garbanzos","2 Latas de atún","Tomate","Cebolla","Aceite y vinagre"], pasos:["1. Mezclar todos los ingredientes.","2. Aliñar al gusto."] },
   { n:"Paté de berenjena", t:40, ing:["2 Berenjenas","Ajo","Aceite","Limón"], pasos:["1. Asar berenjenas 200°C 30 min.","2. Sacar pulpa y triturar con ajo, aceite y limón."] },
   { n:"Higos con jamón", t:10, ing:["4 Higos frescos","4 Lonchas de jamón serrano"], pasos:["1. Abrir los higos.","2. Envolver con el jamón.","3. Servir."] },
   { n:"Tarta de queso sin horno", t:20, ing:["1 Queso crema","200ml Nata","3 cdas Azúcar","1 Masa de galletas"], pasos:["1. Triturar galletas y poner en molde.","2. Batir queso, nata y azúcar.","3. Verter y enfriar 4 horas."] },
-{ n:"Sopa de verduras", t:30, ing:["1 Puerro","1 Zanahoria","1 Patata","1 Cebolla","Caldo"], pasos:["1. Trocear verduras.","2. Cocer en caldo 20 min.","3. Triturar o dejar entera."] },
+  { n:"Sopa de verduras", t:30, ing:["1 Puerro","1 Zanahoria","1 Patata","1 Cebolla","Caldo"], pasos:["1. Trocear verduras.","2. Cocer en caldo 20 min.","3. Triturar o dejar entera."] },
   { n:"Pollo con arroz y verduras", t:35, ing:["1 Pollo troceado","200g Arroz","1 Pimiento","1 Zanahoria","Caldo"], pasos:["1. Dorar pollo.","2. Añadir arroz y verduras.","3. Echar caldo y cocer 18 min."] },
   { n:"Tortilla de espinacas", t:15, ing:["4 Huevos","200g Espinacas","1 Cebolla"], pasos:["1. Saltear espinacas con cebolla.","2. Mezclar con huevos.","3. Cuajar."] },
   { n:"Lasaña de verduras", t:50, ing:["12 Placas","1 Calabacín","1 Berenjena","Tomate triturado","Bechamel"], pasos:["1. Asar verduras.","2. Montar capas con tomate y bechamel.","3. Hornear 200°C 25 min."] },
@@ -518,7 +534,9 @@ RECETAS = RECETAS.concat([
   { n:"Salmón al limón (Thermomix)", t:20, ing:["2 Lomos salmón","Limón","Caldo","Aceite"], pasos:["1. Poner agua en el vaso.","2. Salmón en Varoma con limón.","3. Cocer 15 min/Varoma/vel 1."] },
   { n:"Flan de huevo (Airfryer)", t:40, ing:["4 Huevos","500ml Leche","Azúcar","Caramelo"], pasos:["1. Caramelo en molde.","2. Batir huevos y leche.","3. Airfryer 160°C 25 min al baño María."] },
   { n:"Pollo a la cerveza (Thermomix)", t:40, ing:["1 Pollo","1 Cerveza","Cebolla","Ajo"], pasos:["1. Dorar pollo.","2. Añadir cerveza y verduras.","3. Cocer 30 min/100°C/giro izq/vel cuchara."] },
-{ n:"Merluza a la plancha", t:15, ing:["4 Lomos merluza","Ajo","Perejil","Aceite"], pasos:["1. Calentar plancha.","2. Hacer merluza 3 min por lado.","3. Echar ajo y perejil."] },
+  { n:"Merluza a la plancha", t:15, ing:["4 Lomos merluza","Ajo","Perejil","Aceite"], pasos:["1. Calentar plancha.","2. Hacer merluza 3 min por lado.","3. Echar ajo y perejil."] }
+]);
+RECETAS = RECETAS.concat([
   { n:"Ensalada de frutas", t:10, ing:["1 Manzana","1 Naranja","1 Plátano","1 Kiwi"], pasos:["1. Pelar y trocear frutas.","2. Mezclar en bol.","3. Añadir zumo naranja."] },
   { n:"Huevos revueltos con champiñones", t:10, ing:["4 Huevos","200g Champiñones","Ajo"], pasos:["1. Saltear champiñones.","2. Echar huevos.","3. Remover hasta cuajar."] },
   { n:"Pasta a la carbonara (Thermomix)", t:20, ing:["250g Pasta","Bacon","Nata","Queso"], pasos:["1. Cocer pasta.","2. Dorar bacon.","3. Mezclar con nata y queso."] },
@@ -527,7 +545,7 @@ RECETAS = RECETAS.concat([
   { n:"Sopa de marisco", t:30, ing:["Marisco","Tomate","Cebolla","Caldo"], pasos:["1. Pochar cebolla y tomate.","2. Añadir marisco y caldo.","3. Cocer 15 min."] },
   { n:"Arroz con pollo (Thermomix)", t:30, ing:["200g Arroz","300g Pollo","Caldo","Pimiento"], pasos:["1. Dorar pollo.","2. Añadir arroz y caldo.","3. Cocer 15 min/100°C/vel 1."] },
   { n:"Bizcocho de limón", t:45, ing:["3 Huevos","Azúcar","Harina","Limón","Levadura"], pasos:["1. Batir huevos y azúcar.","2. Añadir limón y harina.","3. Hornear 180°C 35 min."] },
-{ n:"Pimientos asados", t:30, ing:["3 Pimientos rojos","Aceite","Sal"], pasos:["1. Asar pimientos 200°C 25 min.","2. Pelar y cortar en tiras.","3. Aliñar."] },
+  { n:"Pimientos asados", t:30, ing:["3 Pimientos rojos","Aceite","Sal"], pasos:["1. Asar pimientos 200°C 25 min.","2. Pelar y cortar en tiras.","3. Aliñar."] },
   { n:"Pollo a la plancha", t:15, ing:["2 Pechugas","Aceite","Sal"], pasos:["1. Filetear.","2. Hacer a la plancha.","3. Salar."] },
   { n:"Tarta de manzana (Thermomix)", t:40, ing:["Manzanas","Masa","Azúcar","Canela"], pasos:["1. Triturar manzanas.","2. Mezclar con azúcar y canela.","3. Hornear 180°C 30 min."] },
   { n:"Salmón a la plancha", t:15, ing:["2 Lomos","Aceite","Sal"], pasos:["1. Calentar plancha.","2. Hacer salmón 3 min por lado."] },
@@ -537,12 +555,14 @@ RECETAS = RECETAS.concat([
   { n:"Pollo al curry (Airfryer)", t:30, ing:["Pollo","Curry","Leche coco"], pasos:["1. Adobar pollo.","2. Airfryer 180°C 20 min."] },
   { n:"Arroz blanco (Thermomix)", t:20, ing:["200g Arroz","Agua","Ajo"], pasos:["1. Poner todo en el cestillo.","2. Cocer 15 min/Varoma/vel 4."] },
   { n:"Merluza al horno (Airfryer)", t:20, ing:["4 Lomos","Patata","Limón"], pasos:["1. Poner todo en Airfryer.","2. Cocinar 180°C 15 min."] },
-  { n:"Flan (Airfryer)", t:30, ing:["Huevos","Leche","Azúcar","Caramelo"], pasos:["1. Preparar mezcla.","2. Airfryer 160°C 25 min."] },
+  { n:"Natillas (Thermomix)", t:20, ing:["Leche","Huevos","Azúcar","Maicena"], pasos:["1. Mezclar todo en el vaso.","2. Cocinar 7 min/90°C/vel 4."] },
   { n:"Bizcocho (Airfryer)", t:30, ing:["Huevos","Harina","Azúcar","Levadura"], pasos:["1. Mezclar.","2. Airfryer 160°C 25 min."] },
   { n:"Pizza casera (Airfryer)", t:20, ing:["Masa","Tomate","Queso"], pasos:["1. Montar pizza.","2. Airfryer 180°C 10 min."] },
-  { n:"Patatas asadas (Airfryer)", t:25, ing:["Patatas","Aceite","Sal"], pasos:["1. Cortar.","2. Airfryer 180°C 20 min."] }
+  { n:"Patatas asadas (Airfryer)", t:25, ing:["Patatas","Aceite","Sal"], pasos:["1. Cortar.","2. Airfryer 180°C 20 min."] },
+  { n:"Crema de champiñones (Thermomix)", t:25, ing:["Champiñones","Cebolla","Caldo","Nata"], pasos:["1. Pochar cebolla y champiñones.","2. Añadir caldo y cocer 10 min.","3. Triturar y añadir nata."] },
+  { n:"Lentejas (Airfryer)", t:50, ing:["Lentejas","Chorizo","Patata","Caldo"], pasos:["1. Poner todo en molde.","2. Airfryer 180°C 25 min."] },
+  { n:"Lasaña (Thermomix)", t:50, ing:["Placas","Carne","Tomate","Bechamel"], pasos:["1. Hacer carne con tomate.","2. Montar capas.","3. Hornear 200°C 20 min."] }
 ]);
-
 // --- LÓGICA DE LA APLICACIÓN ---
 let existencias = []; let siguienteId = 1; let seleccionActual = null;
 
@@ -565,8 +585,7 @@ function renderPanel(ubi){
   items.forEach(e => {
     const dias = diasHasta(e.caduca);
     let btnMover = ubi === 'congelador' ? '<button class="btn-mover" onclick="moverProducto(' + e.id + ', \'nevera\')">🔥</button>' : '<button class="btn-mover" onclick="moverProducto(' + e.id + ', \'congelador\')">❄️</button>';
-    let fechaTxt = e.caduca ? '📅 ' +
-formatoFecha(e.caduca) : '';
+    let fechaTxt = e.caduca ? '📅 ' + formatoFecha(e.caduca) : '';
     if (dias !== null) fechaTxt += ' · ' + (dias < 0 ? '❌ caducado' : (dias === 0 ? '⚠️ hoy' : '⏳ ' + dias + ' días'));
     html += '<div class="item"><div><div class="nombre">' + (e.abierto ? '🔓 ' : '📦 ') + e.nombre + '</div><div class="detalle">' + fechaTxt + '</div></div><div class="acciones">' + btnMover + (e.abierto ? '' : '<button class="btn-abrir" onclick="abrirProducto(' + e.id + ')">Abrir</button>') + '<button class="btn-gastar" onclick="gastarProducto(' + e.id + ')">Gastar</button></div></div>';
   });
@@ -589,24 +608,124 @@ function renderAvisos(){
   cont.innerHTML = html;
 }
 
-function abrirProducto(id){ const e = existencias.find(x => x.id === id); if (!e) return; const alim = buscarAlimento(e.nombre); const dias = alim && alim.a ? alim.a : 3; const nueva = new Date(hoy().getTime() + dias * 24*60*60*1000); const impresa = aFecha(e.caduca); let final = nueva; if (impresa && impresa < nueva) final = impresa; e.abierto = true; e.caduca = final.toISOString().slice(0,10); guardar(); renderTodo(); }
-function gastarProducto(id){ const e = existencias.find(x => x.id === id); if (!e) return; if (!confirm('¿Gastar ' + e.nombre + '?')) return; e.gastado = true; guardar(); renderTodo(); }
-function moverProducto(id, destino){ const e = existencias.find(x => x.id === id); if (!e) return; e.ubicacion = destino; if(destino === 'congelador'){ const nueva = new Date(hoy().getTime() + 90 * 24*60*60*1000); e.caduca = nueva.toISOString().slice(0,10); e.abierto = false; } else if (destino === 'nevera'){ const nueva = new Date(hoy().getTime() + 2 * 24*60*60*1000); e.caduca = nueva.toISOString().slice(0,10); } guardar(); renderTodo(); }
-function abrirModal(){ seleccionActual = null; document.getElementById('in-nombre').value = ''; document.getElementById('in-caduca').value = ''; document.getElementById('in-ubi').value = 'nevera'; document.getElementById('sugerencias').style.display = 'none'; document.getElementById('ocr-estado').style.display = 'none'; document.getElementById('modal').classList.add('abierto'); }
+function abrirProducto(id){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  const alim = buscarAlimento(e.nombre); const dias = alim && alim.a ? alim.a : 3;
+  const nueva = new Date(hoy().getTime() + dias * 24*60*60*1000); const impresa = aFecha(e.caduca);
+  let final = nueva; if (impresa && impresa < nueva) final = impresa;
+  e.abierto = true; e.caduca = final.toISOString().slice(0,10); guardar(); renderTodo();
+}
+
+function gastarProducto(id){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  if (!confirm('¿Gastar ' + e.nombre + '?')) return;
+  e.gastado = true; guardar(); renderTodo();
+}
+
+function moverProducto(id, destino){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  e.ubicacion = destino;
+  if(destino === 'congelador'){
+    const nueva = new Date(hoy().getTime() + 90 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10); e.abierto = false; 
+  } else if (destino === 'nevera'){
+    const nueva = new Date(hoy().getTime() + 2 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10);
+  }
+  guardar(); renderTodo();
+}
+
+function abrirModal(){
+  seleccionActual = null; document.getElementById('in-nombre').value = ''; document.getElementById('in-caduca').value = ''; document.getElementById('in-ubi').value = 'nevera';
+  document.getElementById('sugerencias').style.display = 'none'; document.getElementById('ocr-estado').style.display = 'none';
+  document.getElementById('modal').classList.add('abierto');
+}
 function cerrarModal(){ document.getElementById('modal').classList.remove('abierto'); }
-function alEscribirNombre(){ const v = document.getElementById('in-nombre').value.trim().toLowerCase(); const cont = document.getElementById('sugerencias'); if (v.length < 2){ cont.style.display = 'none'; return; } const matches = ALIMENTOS.filter(a => a.n.toLowerCase().includes(v)).slice(0, 8); if (matches.length === 0){ cont.innerHTML = '<div style="padding:10px; cursor:pointer;" onclick="elegirLibre()">Usar «' + document.getElementById('in-nombre').value + '» (nuevo)</div>'; cont.style.display = 'block'; return; } cont.innerHTML = matches.map(a => '<div style="padding:10px; cursor:pointer; border-bottom:1px solid #eee;" onclick="elegirAlimento(\'' + a.n.replace(/'/g, "\\'") + '\')">' + a.n + '</div>').join(''); cont.style.display = 'block'; }
-function elegirAlimento(nombre){ document.getElementById('in-nombre').value = nombre; document.getElementById('sugerencias').style.display = 'none'; seleccionActual = buscarAlimento(nombre); if (seleccionActual){ document.getElementById('in-ubi').value = seleccionActual.u; if (seleccionActual.dias && seleccionActual.dias > 0) { const f = new Date(hoy().getTime() + seleccionActual.dias * 24*60*60*1000); document.getElementById('in-caduca').value = f.toISOString().slice(0,10); } } }
+
+function alEscribirNombre(){
+  const v = document.getElementById('in-nombre').value.trim().toLowerCase(); const cont = document.getElementById('sugerencias');
+  if (v.length < 2){ cont.style.display = 'none'; return; }
+  const matches = ALIMENTOS.filter(a => a.n.toLowerCase().includes(v)).slice(0, 8);
+  if (matches.length === 0){ cont.innerHTML = '<div style="padding:10px; cursor:pointer;" onclick="elegirLibre()">Usar «' + document.getElementById('in-nombre').value + '» (nuevo)</div>'; cont.style.display = 'block'; return; }
+  cont.innerHTML = matches.map(a => '<div style="padding:10px; cursor:pointer; border-bottom:1px solid #eee;" onclick="elegirAlimento(\'' + a.n.replace(/'/g, "\\'") + '\')">' + a.n + '</div>').join(''); cont.style.display = 'block';
+}
+
+function elegirAlimento(nombre){
+  document.getElementById('in-nombre').value = nombre; document.getElementById('sugerencias').style.display = 'none';
+  seleccionActual = buscarAlimento(nombre);
+  if (seleccionActual){
+    document.getElementById('in-ubi').value = seleccionActual.u;
+    if (seleccionActual.dias && seleccionActual.dias > 0) {
+      const f = new Date(hoy().getTime() + seleccionActual.dias * 24*60*60*1000);
+      document.getElementById('in-caduca').value = f.toISOString().slice(0,10);
+    }
+  }
+}
 function elegirLibre(){ seleccionActual = null; document.getElementById('sugerencias').style.display = 'none'; }
-function guardarProducto(){ const nombre = document.getElementById('in-nombre').value.trim(); const caduca = document.getElementById('in-caduca').value; const ubi = document.getElementById('in-ubi').value; if (!nombre){ alert('Escribe un nombre'); return; } existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false }); guardar(); cerrarModal(); renderTodo(); }
-function renderRecetas(){ const panel = document.getElementById('panel-recetas'); if (!panel) return; const abiertos = existencias.filter(e => !e.gastado).map(e => e.nombre.toLowerCase()); const proximos = existencias.filter(e => !e.gastado).filter(e => { const d = diasHasta(e.caduca); return d !== null && d <= 5; }).map(e => e.nombre.toLowerCase()); const todas = RECETAS.map(r => { const usa = r.ing.filter(i => abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a))); const deCaducan = r.ing.filter(i => proximos.some(p => p.includes(i.toLowerCase()) || i.toLowerCase().includes(p))); return { r: r, usa: usa.length, deCaducan: deCaducan.length }; }).sort((a,b) => b.deCaducan - a.deCaducan || b.usa - a.usa || a.r.n.localeCompare(b.r.n)); let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Recetario</h2>'; html += '<input type="text" id="buscador-receta" class="buscador" placeholder="🔍 Buscar receta..." onkeyup="filtrarRecetas(this.value)">'; html += '<div id="lista-recetas">'; todas.forEach(x => { let badge = x.deCaducan > 0 ? '<b style="color:#c62828; font-size:12px;">(¡Gastar pronto!)</b>' : (x.usa >= 2 ? '<b style="color:#2e7d32; font-size:12px;">(Puedes hacerlo)</b>' : ''); html += '<div class="receta" data-nombre="' + x.r.n.toLowerCase() + '"><h3>' + x.r.n + ' ' + badge + '</h3><div class="meta">⏱ ' + x.r.t + ' min · tienes ' + x.usa + ' de ' + x.r.ing.length + ' ing.</div><div class="ing">' + x.r.ing.map(i => { const tiene = abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)); return '<span class="' + (tiene ? 'tiene' : 'falta') + '">' + (tiene ? '✓ ' : '· ') + i + '</span>'; }).join(' · ') + '</div><ol class="pasos">' + x.r.pasos.map(p => '<li>' + p + '</li>').join('') + '</ol></div>'; }); html += '</div>'; panel.innerHTML = html; }
-function renderTrucos(){ const panel = document.getElementById('panel-trucos'); if (!panel) return; let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Trucos de Cocina</h2>'; html += '<input type="text" id="buscador-trucos" class="buscador" placeholder="🔍 Buscar truco..." onkeyup="filtrarTrucos(this.value)">'; html += '<div id="lista-trucos">'; TRUCOS.forEach(t => { html += '<div class="receta" data-nombre="' + (t.t + " " + t.cat).toLowerCase() + '"><h3 style="font-size:16px;">' + t.t + '</h3><div class="meta">' + t.cat + '</div><div class="pasos" style="padding-left:0; margin-top:4px;">' + t.d + '</div></div>'; }); html += '</div>'; panel.innerHTML = html; }
+
+function guardarProducto(){
+  const nombre = document.getElementById('in-nombre').value.trim(); const caduca = document.getElementById('in-caduca').value;
+  const ubi = document.getElementById('in-ubi').value;
+  if (!nombre){ alert('Escribe un nombre'); return; }
+  existencias.push({ id: siguienteId++, nombre: nombre, caduca: caduca, ubicacion: ubi, abierto: false, gastado: false });
+  guardar(); cerrarModal(); renderTodo();
+}
+
+function renderRecetas(){
+  const panel = document.getElementById('panel-recetas'); if (!panel) return;
+  const abiertos = existencias.filter(e => !e.gastado).map(e => e.nombre.toLowerCase());
+  const proximos = existencias.filter(e => !e.gastado).filter(e => { const d = diasHasta(e.caduca); return d !== null && d <= 5; }).map(e => e.nombre.toLowerCase());
+  const todas = RECETAS.map(r => {
+    const usa = r.ing.filter(i => abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)));
+    const deCaducan = r.ing.filter(i => proximos.some(p => p.includes(i.toLowerCase()) || i.toLowerCase().includes(p)));
+    return { r: r, usa: usa.length, deCaducan: deCaducan.length };
+  }).sort((a,b) => b.deCaducan - a.deCaducan || b.usa - a.usa || a.r.n.localeCompare(b.r.n));
+
+  let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Recetario</h2>';
+  html += '<input type="text" id="buscador-receta" class="buscador" placeholder="🔍 Buscar receta..." onkeyup="filtrarRecetas(this.value)">';
+  html += '<div id="lista-recetas">';
+  todas.forEach(x => {
+    let badge = x.deCaducan > 0 ? '<b style="color:#c62828; font-size:12px;">(¡Gastar pronto!)</b>' : (x.usa >= 2 ? '<b style="color:#2e7d32; font-size:12px;">(Puedes hacerlo)</b>' : '');
+    html += '<div class="receta" data-nombre="' + x.r.n.toLowerCase() + '"><h3>' + x.r.n + ' ' + badge + '</h3><div class="meta">⏱ ' + x.r.t + ' min · tienes ' + x.usa + ' de ' + x.r.ing.length + ' ing.</div><div class="ing">' + x.r.ing.map(i => { const tiene = abiertos.some(a => a.includes(i.toLowerCase()) || i.toLowerCase().includes(a)); return '<span class="' + (tiene ? 'tiene' : 'falta') + '">' + (tiene ? '✓ ' : '· ') + i + '</span>'; }).join(' · ') + '</div><ol class="pasos">' + x.r.pasos.map(p => '<li>' + p + '</li>').join('') + '</ol></div>';
+  });
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
+function renderTrucos(){
+  const panel = document.getElementById('panel-trucos'); if (!panel) return;
+  let html = '<h2 style="margin:0 0 10px;color:#2c3e2e">Trucos de Cocina</h2>';
+  html += '<input type="text" id="buscador-trucos" class="buscador" placeholder="🔍 Buscar truco..." onkeyup="filtrarTrucos(this.value)">';
+  html += '<div id="lista-trucos">';
+  TRUCOS.forEach(t => {
+    html += '<div class="receta" data-nombre="' + (t.t + " " + t.cat).toLowerCase() + '"><h3 style="font-size:16px;">' + t.t + '</h3><div class="meta">' + t.cat + '</div><div class="pasos" style="padding-left:0; margin-top:4px;">' + t.d + '</div></div>';
+  });
+  html += '</div>';
+  panel.innerHTML = html;
+}
+
 function filtrarRecetas(texto) { const filtro = texto.toLowerCase(); document.querySelectorAll('#lista-recetas .receta').forEach(r => { r.style.display = r.getAttribute('data-nombre').includes(filtro) ? 'block' : 'none'; }); }
 function filtrarTrucos(texto) { const filtro = texto.toLowerCase(); document.querySelectorAll('#lista-trucos .receta').forEach(r => { r.style.display = r.getAttribute('data-nombre').includes(filtro) ? 'block' : 'none'; }); }
-function extraerFechaInteligente(texto) { let t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); const meses = {"ene":"01","feb":"02","mar":"03","abr":"04","may":"05","jun":"06","jul":"07","ago":"08","sep":"09","oct":"10","nov":"11","dic":"12"}; for (let m in meses) { t = t.replace(new RegExp(m + "[a-z]*", "g"), meses[m]); } let d=null, m=null, a=null; let match = t.match(/(20\d{2})[\/\-\.\s](\d{1,2})[\/\-\.\s](\d{1,2})/); if (match) { a = match[1]; m = match[2].padStart(2,'0'); d = match[3].padStart(2,'0'); } if (!a) { match = t.match(/(\d{1,2})[\/\-\.\s](\d{1,2})[\/\-\.\s](20\d{2}|\d{2})/); if (match) { d = match[1].padStart(2,'0'); m = match[2].padStart(2,'0'); a = match[3]; } } if (a && a.length === 2) a = "20" + a; if (d && m && a && parseInt(d) <= 31 && parseInt(m) <= 12) return a + "-" + m + "-" + d; return null; }
 
+function extraerFechaInteligente(texto) {
+  let t = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const meses = {"ene":"01","feb":"02","mar":"03","abr":"04","may":"05","jun":"06","jul":"07","ago":"08","sep":"09","oct":"10","nov":"11","dic":"12"};
+  for (let m in meses) { t = t.replace(new RegExp(m + "[a-z]*", "g"), meses[m]); }
+  let d=null, m=null, a=null;
+  let match = t.match(/(20\d{2})[\/\-\.\s](\d{1,2})[\/\-\.\s](\d{1,2})/);
+  if (match) { a = match[1]; m = match[2].padStart(2,'0'); d = match[3].padStart(2,'0'); }
+  if (!a) {
+    match = t.match(/(\d{1,2})[\/\-\.\s](\d{1,2})[\/\-\.\s](20\d{2}|\d{2})/);
+    if (match) { d = match[1].padStart(2,'0'); m = match[2].padStart(2,'0'); a = match[3]; }
+  }
+  if (a && a.length === 2) a = "20" + a;
+  if (d && m && a && parseInt(d) <= 31 && parseInt(m) <= 12) return a + "-" + m + "-" + d;
+  return null;
+}
 document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('fecha-hoy').textContent = hoy().toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   document.querySelectorAll('.tab').forEach(t => { t.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(x => x.classList.remove('activa')); document.querySelectorAll('.panel').forEach(x => x.classList.remove('activa')); t.classList.add('activa'); document.getElementById('panel-' + t.dataset.tab).classList.add('activa'); }); });
+  
   document.getElementById('fab-add').addEventListener('click', abrirModal); 
   document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
   document.getElementById('btn-guardar').addEventListener('click', guardarProducto); 
@@ -660,12 +779,13 @@ document.addEventListener('DOMContentLoaded', function(){
     if(!data || data === '{"existencias":[],"siguienteId":1}') { alert("La despensa está vacía."); return; }
     prompt("Copia este texto y guárdalo:", data);
   });
-  document.getElementById('btn-restore').addEventListener('click', function(){const data = prompt("Pega aquí la copia de seguridad:");
+  document.getElementById('btn-restore').addEventListener('click', function(){
+    const data = prompt("Pega aquí la copia de seguridad:");
     if(data){ try { JSON.parse(data); localStorage.setItem('despensa_v1', data); alert("¡Copia cargada!"); location.reload(); } catch(e) { alert("El texto no es válido."); } }
   });
+  
   cargar(); renderTodo();
 });
 </script>
 </body>
 </html>
-```
