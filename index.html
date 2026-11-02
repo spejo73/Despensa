@@ -123,7 +123,7 @@
 </div>
 
 <script>
- const ALIMENTOS = [
+const ALIMENTOS = [
   { n:"Leche fresca", u:"nevera", a:4, dias:5 }, { n:"Leche UHT", u:"despensa", a:4, dias:90 },
   { n:"Leche sin lactosa", u:"nevera", a:4, dias:7 }, { n:"Leche de soja", u:"despensa", a:4, dias:180 },
   { n:"Bebida de avena", u:"despensa", a:4, dias:180 }, { n:"Yogur natural", u:"nevera", a:3, dias:14 },
@@ -178,7 +178,7 @@ const RECETAS = [
   { n:"Pollo asado al limón", t:60, ing:["Pollo","Limón","Ajo","Tomillo","Aceite de oliva","Patata"], pasos:["Untar pollo con limón y especias.","Poner con patatas en bandeja.","Hornear 50 min a 200°C."] },
   { n:"Tofu salteado con verduras", t:20, ing:["Tofu","Pimiento","Cebolla","Calabacín","Salsa de soja","Aceite de oliva"], pasos:["Cortar tofu en dados y dorar.","Saltear verduras.","Mezclar todo con salsa de soja."] }
 ];
- let existencias = []; let siguienteId = 1; let seleccionActual = null;
+let existencias = []; let siguienteId = 1; let seleccionActual = null;
 
 function cargar(){ try { const raw = localStorage.getItem('despensa_v1'); if (raw) { const d = JSON.parse(raw); existencias = d.existencias || []; siguienteId = d.siguienteId || 1; } } catch(e) { existencias = []; siguienteId = 1; } }
 function guardar(){ localStorage.setItem('despensa_v1', JSON.stringify({ existencias: existencias, siguienteId: siguienteId })); }
