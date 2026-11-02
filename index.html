@@ -134,49 +134,72 @@ const ALIMENTOS = [
   { n:"Soja texturizada", u:"despensa", a:0, dias:365 }, { n:"Hummus", u:"nevera", a:3, dias:7 },
   { n:"Embutido loncheado", u:"nevera", a:4, dias:10 }, { n:"Chorizo", u:"nevera", a:14, dias:30 },
   { n:"Jamón serrano", u:"nevera", a:21, dias:45 }, { n:"Pescado fresco", u:"nevera", a:1, dias:2 },
-  { n:"Sushi", u:"nevera", a:1, dias:1 }, { n:"Gambas cocidas", u:"nevera", a:2, dias:3 },
-  { n:"Atún en lata", u:"despensa", a:1, dias:365 }, { n:"Huevos frescos", u:"nevera", a:14, dias:21 },
-  { n:"Tomate", u:"nevera", a:5, dias:7 }, { n:"Lechuga", u:"nevera", a:3, dias:5 },
-  { n:"Endivia", u:"nevera", a:3, dias:7 }, { n:"Aguacate", u:"nevera", a:2, dias:5 },
+  { n:"Sushi", u:"nevera", a:1, dias:1, c:false }, { n:"Gambas cocidas", u:"nevera", a:2, dias:3 },
+  { n:"Atún en lata", u:"despensa", a:1, dias:365 }, { n:"Huevos frescos", u:"nevera", a:14, dias:21, c:false },
+  { n:"Tomate", u:"nevera", a:5, dias:7, c:false }, { n:"Lechuga", u:"nevera", a:3, dias:5, c:false },
+  { n:"Endivia", u:"nevera", a:3, dias:7, c:false }, { n:"Aguacate", u:"nevera", a:2, dias:5, c:false },
   { n:"Cebolla", u:"despensa", a:21, dias:30 }, { n:"Ajo", u:"despensa", a:60, dias:90 },
   { n:"Pimiento", u:"nevera", a:6, dias:10 }, { n:"Zanahoria", u:"nevera", a:14, dias:21 },
-  { n:"Patata", u:"despensa", a:14, dias:30 }, { n:"Champiñones", u:"nevera", a:3, dias:5 },
+  { n:"Patata", u:"despensa", a:14, dias:30, c:false }, { n:"Champiñones", u:"nevera", a:3, dias:5 },
   { n:"Calabacín", u:"nevera", a:6, dias:10 }, { n:"Berenjena", u:"nevera", a:6, dias:10 },
   { n:"Quinoa", u:"despensa", a:0, dias:365 }, { n:"Arroz", u:"despensa", a:0, dias:365 },
   { n:"Pasta", u:"despensa", a:0, dias:365 }, { n:"Legumbres secas", u:"despensa", a:0, dias:365 },
   { n:"Harina", u:"despensa", a:0, dias:180 }, { n:"Pan", u:"despensa", a:3, dias:4 },
   { n:"Aceite de oliva", u:"despensa", a:0, dias:365 }, { n:"Tomate triturado", u:"despensa", a:4, dias:365 },
-  { n:"Mayonesa", u:"nevera", a:45, dias:180 }, { n:"Caldo", u:"nevera", a:4, dias:7 },
+  { n:"Mayonesa", u:"nevera", a:45, dias:180, c:false }, { n:"Caldo", u:"nevera", a:4, dias:7 },
   { n:"Carne congelada", u:"congelador", a:1, dias:180 }, { n:"Pescado congelado", u:"congelador", a:1, dias:180 },
   { n:"Verdura congelada", u:"congelador", a:1, dias:365 }, { n:"Helado", u:"congelador", a:0, dias:180 }
 ];
 
 const RECETAS = [
-  { n:"Tortilla de patatas", t:30, ing:["Huevos frescos","Patata","Cebolla","Aceite de oliva","Sal"], pasos:["Pelar y cortar patatas.","Pochar patata y cebolla 15 min.","Batir huevos y mezclar.","Cuajar en sartén."] },
-  { n:"Pollo al champión con nata", t:30, ing:["Pollo","Champiñones","Nata líquida","Cebolla","Aceite de oliva"], pasos:["Dorar pollo.","Añadir cebolla y champiñones.","Verter nata y cocer 10 min."] },
-  { n:"Lentejas estofadas", t:60, ing:["Legumbres secas","Chorizo","Cebolla","Zanahoria","Ajo"], pasos:["Pochar verduras.","Añadir chorizo y lentejas.","Cocer 45 min."] },
-  { n:"Arroz con pollo", t:45, ing:["Arroz","Pollo","Pimiento","Cebolla","Ajo"], pasos:["Sofreír pollo.","Añadir verduras y arroz.","Cocer 18 min."] },
-  { n:"Pisto manchego", t:40, ing:["Tomate","Calabacín","Berenjena","Pimiento","Cebolla"], pasos:["Cortar verduras.","Pochar cebolla.","Añadir tomate y cocer 20 min."] },
-  { n:"Crema de champiñones", t:25, ing:["Champiñones","Cebolla","Nata líquida","Caldo"], pasos:["Pochar cebolla y champiñones.","Añadir caldo y cocer.","Triturar y añadir nata."] },
-  { n:"Croquetas de jamón", t:45, ing:["Jamón serrano","Leche fresca","Harina","Mantequilla","Huevos frescos","Pan rallado"], pasos:["Hacer bechamel con jamón.","Enfriar 2 horas.","Empanar y freír."] },
-  { n:"Cocido madrileño", t:120, ing:["Legumbres secas","Ternera","Pollo","Chorizo","Zanahoria","Patata"], pasos:["Remojar garbanzos.","Cocer carnes.","Añadir garbanzos y verduras.","Añadir chorizo al final."] },
-  { n:"Albóndigas en salsa", t:50, ing:["Ternera","Huevos frescos","Ajo","Harina","Cebolla","Tomate triturado"], pasos:["Formar bolitas y enharinar.","Freír.","Hacer salsa de tomate y cebolla.","Cocer 20 min."] },
-  { n:"Ensaladilla rusa", t:30, ing:["Patata","Zanahoria","Guisantes","Atún en lata","Mayonesa","Huevos frescos"], pasos:["Cocer verduras.","Picar en dados.","Mezclar con mayonesa y atún."] },
-  { n:"Macarrones con tomate", t:25, ing:["Pasta","Tomate triturado","Cebolla","Ajo","Aceite de oliva"], pasos:["Cocer pasta.","Sofreír ajo y cebolla.","Añadir tomate y mezclar."] },
-  { n:"Merluza al horno", t:30, ing:["Pescado fresco","Patata","Cebolla","Ajo"], pasos:["Patata en rodajas en bandeja.","Poner merluza encima.","Hornear 20 min a 200°C."] },
-  { n:"Sopa de fideos", t:20, ing:["Caldo","Pasta","Zanahoria","Cebolla"], pasos:["Pochar verduras.","Añadir caldo hirviendo.","Echar fideos y cocer 5 min."] },
-  { n:"Revuelto de champiñones", t:15, ing:["Huevos frescos","Champiñones","Ajo","Aceite de oliva"], pasos:["Saltear ajo y champiñones.","Añadir huevos batidos.","Remover hasta cuajar."] },
-  { n:"Patatas a la riojana", t:45, ing:["Patata","Chorizo","Pimiento","Cebolla","Ajo","Pimentón","Caldo"], pasos:["Sofreír cebolla y pimiento.","Añadir chorizo y patatas.","Cubrir con caldo y cocer."] },
-  { n:"Pimientos de Padrón", t:10, ing:["Pimiento","Aceite de oliva","Sal"], pasos:["Lavar y secar.","Freír en aceite muy caliente.","Escurrir y echar sal gorda."] },
-  { n:"Flan de huevo casero", t:50, ing:["Huevos frescos","Leche fresca","Azúcar","Vainilla"], pasos:["Hacer caramelo en el molde.","Batir huevos, leche y azúcar.","Baño María en el horno 40 min."] },
-  { n:"Arroz con leche", t:40, ing:["Arroz","Leche fresca","Azúcar","Canela","Limón"], pasos:["Cocer arroz en agua 5 min.","Añadir leche y azúcar.","Cocer a fuego lento removiendo."] },
-  { n:"Tarta de queso", t:60, ing:["Queso fresco","Huevos frescos","Azúcar","Nata líquida","Harina"], pasos:["Batir queso y azúcar.","Añadir huevos y nata.","Hornear a 200°C 40 min."] },
-  { n:"Bizcocho de yogur", t:45, ing:["Yogur natural","Huevos frescos","Harina","Azúcar","Aceite de oliva","Levadura"], pasos:["Mezclar yogur, huevos y azúcar.","Añadir harina y levadura.","Hornear a 180°C 35 min."] },
-  { n:"Ternera guisada", t:90, ing:["Ternera","Zanahoria","Cebolla","Ajo","Vino tinto","Harina","Caldo"], pasos:["Pasar carne por harina y dorar.","Añadir vino y verduras.","Cocer 1 hora y media."] },
-  { n:"Mejillones al vapor", t:15, ing:["Mejillones","Limón","Laurel","Vino blanco"], pasos:["Limpiar mejillones.","Olla con vino y laurel.","Cocer hasta que se abran."] },
-  { n:"Ensalada de garbanzos", t:10, ing:["Legumbres secas","Tomate","Cebolla","Atún en lata","Aceite de oliva","Vinagre"], pasos:["Escurrir garbanzos.","Picar tomate y cebolla.","Mezclar todo con atún y aliño."] },
-  { n:"Pollo asado al limón", t:60, ing:["Pollo","Limón","Ajo","Tomillo","Aceite de oliva","Patata"], pasos:["Untar pollo con limón y especias.","Poner con patatas en bandeja.","Hornear 50 min a 200°C."] },
-  { n:"Tofu salteado con verduras", t:20, ing:["Tofu","Pimiento","Cebolla","Calabacín","Salsa de soja","Aceite de oliva"], pasos:["Cortar tofu en dados y dorar.","Saltear verduras.","Mezclar todo con salsa de soja."] }
+  { n:"Tortilla de patatas", t:40, ing:["4 Huevos frescos","3 Patatas medianas","1 Cebolla","Aceite de oliva","Sal"], pasos:["1. Pelar y cortar las patatas y la cebolla en láminas finas (10 min).","2. Freír en abundante aceite a fuego medio hasta que estén tiernas (20 min).","3. Escurrir bien el aceite y mezclar con los huevos batidos y sal.","4. Cuajar en una sartén con un poco de aceite, 3-4 min por cada lado."] },
+  { n:"Lentejas estofadas", t:60, ing:["300g Legumbres secas","1 Chorizo","1 Cebolla","2 Zanahorias","2 Ajos","Aceite de oliva"], pasos:["1. Picar la cebolla, el ajo y la zanahoria. Pochar en una olla con aceite (10 min).","2. Añadir el chorizo en rodajas y dar una vuelta.","3. Echar las lentejas y cubrir con agua o caldo.","4. Cocer a fuego medio-bajo unos 45 minutos. Rectificar de sal."] },
+  { n:"Pollo al champión con nata", t:30, ing:["500g Pollo","250g Champiñones","200ml Nata líquida","1 Cebolla","Aceite de oliva"], pasos:["1. Cortar el pollo en trozos y dorarlo en una sartén con aceite (10 min).","2. Añadir la cebolla picada y los champiñones laminados. Cocinar 5 min.","3. Verter la nata líquida y bajar el fuego.","4. Dejar reducir y espesar durante 10 minutos, removiendo."] },
+  { n:"Arroz con pollo", t:45, ing:["300g Arroz","400g Pollo","1 Pimiento","1 Cebolla","2 Ajos","Aceite de oliva"], pasos:["1. Sofreír el pollo troceado en una cazuela ancha (10 min).","2. Añadir el pimiento, la cebolla y el ajo picados. Pochar (10 min).","3. Incorporar el arroz y sofreírlo 1 minuto.","4. Echar el doble de agua caliente, salar y cocer 18 min. Reposar 5 min."] },
+  { n:"Macarrones con tomate", t:25, ing:["250g Pasta","400g Tomate triturado","1 Cebolla","2 Ajos","Aceite de oliva"], pasos:["1. Poner agua a hervir y cocer la pasta según el paquete (unos 10 min).","2. Mientras, sofreír el ajo y la cebolla picados en una sartén.","3. Añadir el tomate triturado y un poco de sal. Cocer a fuego lento 10 min.","4. Escurrir la pasta y mezclarla con la salsa."] },
+  { n:"Pisto manchego", t:40, ing:["2 Tomates","1 Calabacín","1 Berenjena","1 Pimiento verde","1 Cebolla","Aceite de oliva"], pasos:["1. Picar todas las verduras en dados.","2. Pochar la cebolla y el pimiento en una sartén amplia (10 min).","3. Añadir el calabacín y la berenjena y cocinar 10 min más.","4. Incorporar el tomate y cocinar 15 min a fuego medio."] },
+  { n:"Crema de champiñones", t:25, ing:["300g Champiñones","1 Cebolla","200ml Nata líquida","500ml Caldo","Aceite de oliva"], pasos:["1. Pochar la cebolla y los champiñones laminados en una olla (10 min).","2. Añadir el caldo y cocer 10 minutos.","3. Triturar con la batidora hasta obtener una crema fina.","4. Añadir la nata, rectificar de sal y servir caliente."] },
+  { n:"Croquetas de jamón", t:45, ing:["500ml Leche fresca","50g Harina","50g Mantequilla","100g Jamón serrano","1 Huevo","Pan rallado","Nuez moscada"], pasos:["1. Hacer una bechamel espesa con mantequilla, harina, leche, sal y nuez moscada.","2. Añadir el jamón picado y dejar enfriar en la nevera 2 horas.","3. Formar las croquetas, pasar por huevo y pan rallado.","4. Freír en abundante aceite caliente hasta que estén doradas."] },
+  { n:"Cocido madrileño", t:120, ing:["300g Garbanzos","300g Ternera","1 Muslo de pollo","1 Chorizo","2 Zanahorias","2 Patatas"], pasos:["1. Dejar los garbanzos a remojo la noche anterior.","2. Cocer las carnes en olla grande con agua (1 hora).","3. Añadir los garbanzos y las verduras. Cocer 45 min.","4. Incorporar el chorizo al final y rectificar de sal."] },
+  { n:"Albóndigas en salsa", t:50, ing:["500g Carne picada","1 Huevo","2 Ajos","3 cdas Harina","1 Cebolla","400g Tomate triturado","Vino blanco"], pasos:["1. Mezclar la carne, huevo, ajos picados y sal. Formar bolitas y enharinar.","2. Freír en una sartén hasta dorarlas y reservar.","3. En la misma sartén, pochar la cebolla, añadir tomate y vino y cocer 10 min.","4. Añadir las albóndigas y cocer 15 min a fuego suave."] },
+  { n:"Ensaladilla rusa", t:40, ing:["3 Patatas","2 Zanahorias","100g Guisantes","2 Latas de atún","4 cdas Mayonesa","2 Huevos"], pasos:["1. Cocer las patatas, zanahorias y huevos en abundante agua (20-25 min).","2. Cocer los guisantes 5 min.","3. Picar todo en dados pequeños una vez frío.","4. Mezclar con el atún y la mayonesa, y dejar enfriar en la nevera."] },
+  { n:"Merluza al horno", t:30, ing:["4 Lomos de merluza","2 Patatas","1 Cebolla","1 Limón","Aceite de oliva","Perejil"], pasos:["1. Cortar las patatas en rodajas finas y la cebolla en juliana.","2. Pochar ligeramente en una sartén (5 min) y poner en la bandeja del horno.","3. Colocar la merluza encima, sazonar y echar limón, perejil y aceite.","4. Hornear a 200°C durante 15-20 min."] },
+  { n:"Sopa de fideos", t:20, ing:["1 Litro de caldo","100g Fideos finos","1 Cebolla","1 Zanahoria","Aceite de oliva"], pasos:["1. Picar la cebolla y la zanahoria muy finas y pochar en una olla (5 min).","2. Añadir el caldo y llevar a ebullición.","3. Echar los fideos y cocer 4-5 minutos.","4. Servir caliente."] },
+  { n:"Revuelto de champiñones", t:15, ing:["4 Huevos","200g Champiñones","2 Ajos","Aceite de oliva","Sal"], pasos:["1. Saltear los ajos laminados y los champiñones en una sartén (5 min).","2. Batir los huevos con una pizca de sal.","3. Echar los huevos en la sartén y remover suavemente hasta que cuajen al gusto."] },
+  { n:"Patatas a la riojana", t:45, ing:["4 Patatas","1 Chorizo","1 Pimiento verde","1 Cebolla","2 Ajos","1 cda Pimentón","500ml Caldo"], pasos:["1. Sofreír la cebolla, el ajo y el pimiento en una olla (10 min).","2. Añadir el chorizo en rodajas y el pimentón (fuera del fuego para que no amargue).","3. Incorporar las patatas troceadas (panadera) y cubrir con el caldo.","4. Cocer a fuego medio 25-30 min hasta que la patata esté tierna."] },
+  { n:"Pimientos de Padrón", t:10, ing:["250g Pimientos de Padrón","Aceite de oliva","Sal gorda"], pasos:["1. Lavar y secar muy bien los pimientos.","2. Freír en una sartén con aceite muy caliente hasta que se arruguen (3-4 min).","3. Escurrir en papel absorbente y espolvorear con sal gorda."] },
+  { n:"Flan de huevo casero", t:50, ing:["4 Huevos","500ml Leche","150g Azúcar","1 Cucharadita de vainilla","Azúcar para caramelo"], pasos:["1. Hacer un caramelo con azúcar y agua y cubrir el fondo del molde.","2. Batir los huevos, la leche, el azúcar y la vainilla.","3. Verter en el molde y cocer al baño María en el horno a 180°C durante 40 min.","4. Dejar enfriar y desmoldar."] },
+  { n:"Arroz con leche", t:45, ing:["150g Arroz","1 Litro de leche","120g Azúcar","1 Piel de limón","1 Palo de canela"], pasos:["1. Cocer el arroz en agua 5 minutos y escurrir.","2. Poner la leche, el arroz, el azúcar, el limón y la canela en una olla.","3. Cocer a fuego lento durante 35-40 minutos, removiendo de vez en cuando.","4. Servir espolvoreado con canela."] },
+  { n:"Tarta de queso al horno", t:60, ing:["500g Queso fresco","4 Huevos","150g Azúcar","200ml Nata líquida","2 cdas Harina"], pasos:["1. Batir el queso con el azúcar hasta que no queden grumos.","2. Añadir los huevos uno a uno, luego la nata y la harina.","3. Hornear a 200°C durante 40 minutos.","4. Dejar enfriar y meter en la nevera (mejor de un día para otro)."] },
+  { n:"Bizcocho de yogur", t:45, ing:["1 Yogur natural","3 Huevos","200g Azúcar","250g Harina","1 Sobre de levadura","120ml Aceite de oliva","Ralladura de limón"], pasos:["1. Batir los huevos con el azúcar hasta que blanqueen.","2. Añadir el yogur, el aceite y la ralladura. Mezclar.","3. Incorporar la harina y la levadura tamizadas con movimientos suaves.","4. Hornear a 180°C durante 35-40 min."] },
+  { n:"Ternera guisada", t:90, ing:["600g Ternera para guisar","2 Zanahorias","1 Cebolla","2 Ajos","200ml Vino tinto","2 cdas Harina","400ml Caldo de carne"], pasos:["1. Pasar la carne por harina y dorarla en una olla con aceite.","2. Retirar la carne y pochar la cebolla, zanahoria y ajos.","3. Añadir el vino y dejar reducir.","4. Volver a poner la carne, añadir el caldo y cocer a fuego lento 1 hora y media."] },
+  { n:"Mejillones al vapor", t:15, ing:["1 kg Mejillones","1 Limón","1 Hoja de laurel","100ml Vino blanco"], pasos:["1. Limpiar bien los mejillones bajo el grifo.","2. Poner en una olla con el vino, el laurel y un chorrito de agua.","3. Tapar y cocer a fuego fuerte hasta que se abran (3-5 min).","4. Servir con limón. Desechar los que no se hayan abierto."] },
+  { n:"Ensalada de garbanzos", t:10, ing:["400g Garbanzos cocidos","2 Tomates","1 Cebolla pequeña","1 Lata de atún","Aceite de oliva","Vinagre"], pasos:["1. Escurrir y lavar los garbanzos.","2. Picar el tomate y la cebolla en dados pequeños.","3. Mezclar todo con el atún y aliñar con aceite, vinagre y sal."] },
+  { n:"Pollo asado al limón", t:60, ing:["1 Pollo entero","2 Limones","3 Ajos","Tomillo","Aceite de oliva","4 Patatas"], pasos:["1. Untar el pollo con aceite, ajo picado, tomillo y el zumo de un limón.","2. Poner en una bandeja con las patatas troceadas y el otro limón en rodajas.","3. Hornear a 200°C durante 50-60 minutos, bañando con su jugo a mitad.","4. Comprobar que la carne está bien hecha antes de servir."] },
+  { n:"Tofu salteado con verduras", t:20, ing:["250g Tofu firme","1 Pimiento","1 Cebolla","1 Calabacín","3 cdas Salsa de soja","Aceite de oliva"], pasos:["1. Cortar el tofu en dados y dorarlo en una sartén con aceite. Reservar.","2. En la misma sartén, saltear las verduras cortadas en tiras (5-7 min).","3. Volver a añadir el tofu y mezclar todo con la salsa de soja.","4. Saltear 2 minutos más y servir."] },
+  { n:"Patatas fritas crujientes (Airfryer)", t:25, ing:["3 Patatas medianas","1 cda Aceite de oliva","Sal"], pasos:["1. Pelar y cortar las patatas en bastones.","2. Secarlas bien con un paño.","3. Mezclar en un bol con el aceite y la sal.","4. Cocinar en la Airfryer a 180°C durante 20-25 min, agitando a mitad."] },
+  { n:"Alitas de pollo adobadas (Airfryer)", t:25, ing:["8 Alitas de pollo","1 cda Pimentón","1 cda Miel","2 Ajos","Aceite de oliva","Sal"], pasos:["1. Machacar los ajos y mezclar con el pimentón, la miel, sal y aceite.","2. Embadurnar bien las alitas.","3. Colocar en la cesta sin amontonar.","4. Cocinar a 190°C durante 20-25 min, dando la vuelta a mitad."] },
+  { n:"Salmón al limón y eneldo (Airfryer)", t:15, ing:["2 Lomos de salmón","1 Limón","Eneldo seco","Aceite de oliva","Sal"], pasos:["1. Secar los lomos de salmón.","2. Pincelar con aceite y sazonar con sal, eneldo y rodajas de limón.","3. Hornear en la Airfryer a 180°C durante 10-12 minutos."] },
+  { n:"Croquetas de jamón (Airfryer)", t:45, ing:["500ml Leche fresca","50g Harina","50g Mantequilla","100g Jamón serrano","1 Huevo","Pan rallado"], pasos:["1. Hacer una bechamel espesa.","2. Añadir el jamón picado y enfriar 2 horas.","3. Formar las croquetas, pasar por huevo y pan rallado.","4. Cocinar en la Airfryer a 200°C 10-12 min, rociadas con aceite."] },
+  { n:"Berenjenas rebozadas (Airfryer)", t:20, ing:["1 Berenjena","1 Huevo","Pan rallado","Sal"], pasos:["1. Cortar la berenjena en rodajas y dejar en agua salada 10 min.","2. Secar bien, pasar por huevo y pan rallado.","3. Cocinar en la Airfryer a 200°C 12-15 min, dando la vuelta."] },
+  { n:"Lubina a la sal (Airfryer)", t:25, ing:["1 Lubina entera","Sal gorda","1 Limón"], pasos:["1. Limpiar la lubina.","2. Cubrirla totalmente con sal gorda.","3. Meter en la Airfryer a 200°C 18-20 min.","4. Romper la costra, retirar la piel y servir con limón."] },
+  { n:"Salsa de tomate casera (Thermomix)", t:35, ing:["800g Tomate triturado","1 Cebolla","2 Ajos","50ml Aceite de oliva","1 cda Azúcar","Sal","Albahaca"], pasos:["1. Picar cebolla y ajo 5 seg / vel 5.","2. Sofreír con aceite: 10 min / Varoma / vel 1.","3. Añadir tomate, azúcar, sal y albahaca.","4. Cocinar 20 min / Varoma / vel 1."] },
+  { n:"Bechamel rápida (Thermomix)", t:10, ing:["500ml Leche fresca","40g Harina","40g Mantequilla","Nuez moscada","Sal"], pasos:["1. Poner todos los ingredientes en el vaso.","2. Cocinar 7 min / 90°C / vel 4.","3. Comprobar el punto y, si hace falta, 2 min más."] },
+  { n:"Crema de calabacín (Thermomix)", t:30, ing:["2 Calabacines","1 Patata","1 Cebolla","500ml Caldo","100g Queso fresco","Aceite de oliva"], pasos:["1. Trocear verduras y sofreír 10 min / Varoma / vel 1 con aceite.","2. Añadir caldo y cocer 15 min / 100°C / vel 1.","3. Añadir queso y triturar 1 min / vel progresiva 5-10."] },
+  { n:"Lentejas estofadas (Thermomix)", t:45, ing:["300g Lentejas (remojadas)","1 Chorizo","1 Zanahoria","1 Cebolla","1 Hoja de laurel","700ml Caldo"], pasos:["1. Picar cebolla y zanahoria 5 seg / vel 5.","2. Sofreír 8 min / Varoma / vel 1.","3. Añadir chorizo, lentejas, laurel y caldo.","4. Cocinar 30 min / 100°C / giro a la izquierda / vel cuchara."] },
+  { n:"Arroz con leche (Thermomix)", t:45, ing:["150g Arroz","1 Litro de leche","120g Azúcar","1 Piel de limón","1 Palo de canela"], pasos:["1. Poner todos los ingredientes en el vaso.","2. Cocinar 45 min / 90°C / giro a la izquierda / vel cuchara, sin cubilete.","3. Servir espolvoreado con canela."] },
+  { n:"Pollo al ajillo", t:35, ing:["1 Pollo troceado","6 Ajos","100ml Vino blanco","Aceite de oliva","Perejil","Sal"], pasos:["1. Dorar el pollo en una sartén con aceite.","2. Añadir los ajos laminados y sofreír.","3. Echar el vino blanco y dejar evaporar.","4. Cocer a fuego lento 20 min, añadir perejil y servir."] },
+  { n:"Macarrones con tomate (Thermomix)", t:25, ing:["250g Macarrones","400g Tomate triturado","1 Cebolla","2 Ajos","Aceite de oliva","Orégano"], pasos:["1. Cocer la pasta según el paquete.","2. Picar ajo y cebolla 5 seg / vel 5. Sofreír 5 min / Varoma / vel 1.","3. Añadir tomate, orégano y sal. Cocer 10 min / Varoma / vel 1.","4. Mezclar con la pasta escurrida."] },
+  { n:"Merluza al horno", t:30, ing:["4 Lomos de merluza","2 Patatas","1 Cebolla","1 Limón","Aceite de oliva","Perejil"], pasos:["1. Cortar patatas y cebolla en rodajas finas y pochar 5 min.","2. Poner en la bandeja del horno con la merluza encima.","3. Sazonar y echar limón, perejil y aceite.","4. Hornear a 200°C durante 15-20 min."] },
+  { n:"Ensaladilla rusa", t:40, ing:["3 Patatas","2 Zanahorias","100g Guisantes","2 Latas de atún","4 cdas Mayonesa","2 Huevos"], pasos:["1. Cocer patatas, zanahorias y huevos en agua (20-25 min).","2. Cocer guisantes 5 min.","3. Picar todo en dados una vez frío.","4. Mezclar con atún y mayonesa, enfriar en nevera."] },
+  { n:"Albóndigas en salsa", t:50, ing:["500g Carne picada","1 Huevo","2 Ajos","3 cdas Harina","1 Cebolla","400g Tomate triturado","Vino blanco"], pasos:["1. Mezclar carne, huevo, ajos y sal. Formar bolitas y enharinar.","2. Freír hasta dorarlas y reservar.","3. Pochar cebolla, añadir tomate y vino y cocer 10 min.","4. Añadir albóndigas y cocer 15 min a fuego suave."] },
+  { n:"Muslos de pollo al limón (Airfryer)", t:30, ing:["4 Muslos de pollo","2 Limones","Tomillo","Aceite de oliva","Sal","Pimienta"], pasos:["1. Pincelar los muslos con aceite y sazonar con sal, pimienta y tomillo.","2. Colocar en la Airfryer con rodajas de limón.","3. Cocinar a 190°C durante 25 min, girando a mitad de cocción."] },
+  { n:"Verduras asadas (Airfryer)", t:25, ing:["1 Calabacín","1 Pimiento rojo","1 Cebolla","1 Berenjena","Aceite de oliva","Sal"], pasos:["1. Cortar todas las verduras en trozos medianos.","2. Mezclar en un bol con aceite, sal y especias.","3. Cocinar en la Airfryer a 200°C durante 20 min, removiendo a mitad."] },
+  { n:"Flan de huevo (Thermomix)", t:50, ing:["4 Huevos","500ml Leche","150g Azúcar","1 Cucharadita de esencia de vainilla","Azúcar para el caramelo"], pasos:["1. Hacer caramelo en una sartén y cubrir el fondo de los moldes.","2. Poner leche, huevos, azúcar y vainilla en el vaso. Mezclar 20 seg / vel 3.","3. Verter en los moldes y cocer al baño María en el horno a 180°C (40 min)."] },
+  { n:"Bizcocho de yogur (Thermomix)", t:45, ing:["1 Yogur natural","3 Huevos","200g Azúcar","250g Harina","1 Sobre de levadura","120ml Aceite de oliva","Ralladura de limón"], pasos:["1. Poner huevos y azúcar en el vaso. Batir 3 min / 37°C / vel 3.","2. Añadir yogur, aceite y ralladura. Mezclar 10 seg / vel 3.","3. Añadir harina y levadura. Mezclar 15 seg / vel 3 con espátula.","4. Hornear en molde engrasado a 180°C durante 35-40 min."] },
+  { n:"Sopa de fideos (Thermomix)", t:20, ing:["1 Litro de caldo","100g Fideos finos","1 Cebolla","1 Zanahoria","Aceite de oliva"], pasos:["1. Picar cebolla y zanahoria 5 seg / vel 5.","2. Sofreír con aceite 5 min / Varoma / vel 1.","3. Añadir caldo y programar 8 min / 100°C / vel 1.","4. Echar fideos y cocinar 4 min / 100°C / giro a la izquierda / vel cuchara."] },
+  { n:"Ternera guisada", t:90, ing:["600g Ternera para guisar","2 Zanahorias","1 Cebolla","2 Ajos","200ml Vino tinto","2 cdas Harina","400ml Caldo de carne"], pasos:["1. Pasar la carne por harina y dorarla en una olla con aceite.","2. Retirar la carne y pochar la cebolla, zanahoria y ajos.","3. Añadir el vino y dejar reducir.","4. Volver a poner la carne, añadir el caldo y cocer a fuego lento 1 hora y media."] },
+  { n:"Revuelto de champiñones y gambas", t:15, ing:["4 Huevos","200g Champiñones","150g Gambas peladas","2 Ajos","Aceite de oliva","Sal"], pasos:["1. Saltear los ajos laminados, los champiñones y las gambas en una sartén (5 min).","2. Batir los huevos con una pizca de sal.","3. Echar los huevos en la sartén y remover suavemente hasta que cuajen al gusto."] }
 ];
 let existencias = []; let siguienteId = 1; let seleccionActual = null;
 
@@ -199,7 +222,12 @@ function renderPanel(ubi){
   items.forEach(e => {
     const dias = diasHasta(e.caduca);
     let clase = 'item'; if (dias !== null && dias < 0) clase += ' caducado'; else if (dias !== null && dias <= 2) clase += ' urgente';
-    html += '<div class="' + clase + '"><div class="info"><div class="nombre">' + (e.abierto ? '🔓 ' : '📦 ') + e.nombre + '</div><div class="detalle">📅 Caduca: ' + formatoFecha(e.caduca) + (dias !== null ? ' · ' + (dias < 0 ? '❌ caducado' : (dias === 0 ? '⚠️ hoy' : '⏳ ' + dias + ' días')) : '') + '</div></div><div class="acciones">' + (e.abierto ? '' : '<button class="btn-abrir" onclick="abrirProducto(' + e.id + ')">Abrir</button>') + '<button class="btn-gastar" onclick="gastarProducto(' + e.id + ')">Gastar</button></div></div>';
+    
+    let btnMover = '';
+    if (ubi === 'congelador') { btnMover = '<button class="btn-abrir" style="background:#2196f3" onclick="moverProducto(' + e.id + ', \'nevera\')">🔥</button>'; }
+    else { btnMover = '<button class="btn-abrir" style="background:#03a9f4" onclick="moverProducto(' + e.id + ', \'congelador\')">❄️</button>'; }
+    
+    html += '<div class="' + clase + '"><div class="info"><div class="nombre">' + (e.abierto ? '🔓 ' : '📦 ') + e.nombre + '</div><div class="detalle">📅 Caduca: ' + formatoFecha(e.caduca) + (dias !== null ? ' · ' + (dias < 0 ? '❌ caducado' : (dias === 0 ? '⚠️ hoy' : '⏳ ' + dias + ' días')) : '') + '</div></div><div class="acciones">' + btnMover + (e.abierto ? '' : '<button class="btn-abrir" onclick="abrirProducto(' + e.id + ')">Abrir</button>') + '<button class="btn-gastar" onclick="gastarProducto(' + e.id + ')">Gastar</button></div></div>';
   });
   panel.innerHTML = html;
 }
@@ -212,7 +240,20 @@ function renderAvisos(){
   proximos.forEach(x => {
     const clase = x.dias < 0 ? 'rojo' : 'ambar';
     const txt = x.dias < 0 ? 'Caducado' : (x.dias === 0 ? 'Caduca hoy' : 'Caduca en ' + x.dias + ' días');
-    html += '<div class="aviso ' + clase + '"><b>' + (x.dias < 0 ? '❌ ' : '⚠️ ') + txt + ':</b> <span>' + x.e.nombre + '</span></div>';
+    
+    const alim = ALIMENTOS.find(a => a.n.toLowerCase() === x.e.nombre.toLowerCase());
+    const esCongelable = alim ? (alim.c !== false) : true; 
+    let sugerencia = '';
+    
+    if (x.dias >= 0 && x.e.ubicacion !== 'congelador') {
+      if (esCongelable) {
+        sugerencia = '<span style="font-size:12px; color:#555; margin-left:8px;">(Puedes congelarlo ❄️ o gastarlo 🍳)</span>';
+      } else {
+        sugerencia = '<span style="font-size:12px; color:#c62828; margin-left:8px;">(¡Gástalo pronto! No congela bien)</span>';
+      }
+    }
+
+    html += '<div class="aviso ' + clase + '"><b>' + (x.dias < 0 ? '❌ ' : '⚠️ ') + txt + ':</b> <span>' + x.e.nombre + '</span> ' + sugerencia + '</div>';
   });
   cont.innerHTML = html;
 }
@@ -229,6 +270,20 @@ function gastarProducto(id){
   const e = existencias.find(x => x.id === id); if (!e) return;
   if (!confirm('¿Gastar ' + e.nombre + '?')) return;
   e.gastado = true; guardar(); renderTodo();
+}
+
+function moverProducto(id, destino){
+  const e = existencias.find(x => x.id === id); if (!e) return;
+  e.ubicacion = destino;
+  if(destino === 'congelador'){
+    const nueva = new Date(hoy().getTime() + 90 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10);
+    e.abierto = false; 
+  } else if (destino === 'nevera'){
+    const nueva = new Date(hoy().getTime() + 2 * 24*60*60*1000);
+    e.caduca = nueva.toISOString().slice(0,10);
+  }
+  guardar(); renderTodo();
 }
 
 function abrirModal(){
