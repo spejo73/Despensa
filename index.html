@@ -96,7 +96,12 @@
     </div>
   </div>
 </div>
-
+<script>
+window.onerror = function(msg, url, line, col, error) {
+   alert("¡ERROR ENCONTRADO!\nMensaje: " + msg + "\nArchivo: " + url + "\nLínea: " + line);
+   return false;
+};
+</script>
 <script src="trucos.js"></script>
 <script src="recetas.js"></script>
 <script src="apps.js"></script>
