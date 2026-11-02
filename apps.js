@@ -1,4 +1,3 @@
-alert("1. El archivo app.js ha cargado");
 let existencias = []; let siguienteId = 1; let seleccionActual = null;
 
 function cargar(){ try { const raw = localStorage.getItem('despensa_v1'); if (raw) { const d = JSON.parse(raw); existencias = d.existencias || []; siguienteId = d.siguienteId || 1; } } catch(e) { existencias = []; siguienteId = 1; } }
@@ -221,4 +220,3 @@ document.addEventListener('DOMContentLoaded', function(){
   cargar(); 
   renderTodo();
 });
-alert("2. El motor ha terminado de cargar");
